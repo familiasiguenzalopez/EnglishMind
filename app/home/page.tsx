@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CefrBadge } from "@/components/ui/CefrBadge";
+import { AuthStatus } from "@/components/AuthStatus";
 
 // Home dashboard (esqueleto). Datos de ejemplo; se conectarán al progreso real
 // del usuario cuando exista la sesión/auth (Fase 1 siguiente).
@@ -15,6 +16,9 @@ export default function HomeDashboard() {
 
   return (
     <main className="mx-auto max-w-2xl px-5 py-10">
+      <div className="mb-4 flex justify-end">
+        <AuthStatus />
+      </div>
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CefrBadge level="A2" />
