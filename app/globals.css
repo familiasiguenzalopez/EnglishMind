@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────────────────────────────────────────────────────
+   Design system EnglishMind AI · tokens
+   Derivados del panel de administrador aprobado.
+   Regla pedagógica de color: el error informa, no castiga.
+   Coral/ámbar para "por mejorar"; rojo SOLO para crítico.
+   (--font-display / --font-body los inyecta next/font en <html>)
+   ─────────────────────────────────────────────────────────── */
+:root {
+  /* Superficies (dark, 4 niveles) */
+  --bg: #0b0d10;
+  --surface: #14181d;
+  --surface2: #1b2128;
+  --surface3: #232b34;
+
+  /* Bordes (2 niveles) */
+  --border: #2a333d;
+  --border2: #3a4651;
+
+  /* Texto (bright / normal / muted + dim) */
+  --text-bright: #f5f8fa;
+  --text: #e9edf0;
+  --text-muted: #8c99a6;
+  --dim: #5c6873;
+
+  /* Marca + semánticos */
+  --color-primary: #ff6b3d;     /* coral-naranja: energía LATAM */
+  --color-primary-dim: #e0552e;
+  --color-secondary: #27e0c4;   /* teal: éxito, XP, acierto */
+  --color-accent: #9b6bff;      /* violeta: acento/realce */
+
+  /* Feedback */
+  --success: #27e0c4;  /* pronunciación correcta */
+  --warning: #f5b544;  /* por mejorar (cálido, no alarma) */
+  --error: #ff5d5d;    /* solo errores críticos */
+
+  /* Radios */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  /* CEFR A1..C2 (6 colores distintos) */
+  --cefr-a1: #34d399;
+  --cefr-a2: #22d3ee;
+  --cefr-b1: #818cf8;
+  --cefr-b2: #a78bfa;
+  --cefr-c1: #fb923c;
+  --cefr-c2: #f472b6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body), "Hanken Grotesk", sans-serif;
+  background-image:
+    radial-gradient(900px 500px at 85% -5%, rgba(255, 107, 61, 0.1), transparent 60%),
+    radial-gradient(800px 500px at 5% 0%, rgba(39, 224, 196, 0.08), transparent 55%);
+  background-attachment: fixed;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display), "Bricolage Grotesque", sans-serif;
+  letter-spacing: -0.02em;
+}
