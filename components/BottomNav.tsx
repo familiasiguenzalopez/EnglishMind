@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 const TABS = [
   { href: "/home", label: "Inicio", icon: "🏠" },
   { href: "/onboarding", label: "Practicar", icon: "🎯" },
+  { href: "/pronunciacion", label: "Pronunciar", icon: "🗣️" },
   { href: "/escritura", label: "Escribir", icon: "✍️" },
 ];
 
