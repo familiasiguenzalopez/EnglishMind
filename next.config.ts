@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import withSerwistInit from "@serwist/next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -6,4 +7,11 @@ const nextConfig: NextConfig = {
   eslint: { ignoreDuringBuilds: true },
 };
 
-export default nextConfig;
+const withSerwist = withSerwistInit({
+  swSrc: "app/sw.ts",
+  swDest: "public/sw.js",
+  // Desactivado en dev para evitar problemas de caché al desarrollar.
+  disable: process.env.NODE_ENV === "development",
+});
+
+export default withSerwist(nextConfig);
