@@ -37,7 +37,7 @@ export default async function RutaPage({
     .sort((a, b) => a.sort_order - b.sort_order);
 
   return (
-    <main className="mx-auto max-w-2xl px-5 py-10">
+    <main className="mx-auto max-w-2xl px-5 pt-10 pb-28">
       <Link
         href="/onboarding"
         className="text-sm text-ink-muted hover:text-ink"

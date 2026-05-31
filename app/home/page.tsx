@@ -1,24 +1,39 @@
 import Link from "next/link";
 import { CefrBadge } from "@/components/ui/CefrBadge";
 import { AuthStatus } from "@/components/AuthStatus";
+import { anonClient } from "@/lib/supabase/anon";
 
-// Home dashboard (esqueleto). Datos de ejemplo; se conectarán al progreso real
-// del usuario cuando exista la sesión/auth (Fase 1 siguiente).
-const PLAN = [
-  { uso: "Call center", titulo: "Saludo y apertura de llamada", min: 5, xp: 20, emoji: "🎧" },
-  { uso: "Pronunciación", titulo: "Pares mínimos: ship / sheep", min: 4, xp: 15, emoji: "🗣️" },
-  { uso: "Escritura", titulo: "Responder un correo al supervisor", min: 6, xp: 25, emoji: "✍️" },
-];
+// Home dashboard. El "plan de hoy" se arma con lecciones reales de Call center.
+// (El progreso/nivel siguen de ejemplo hasta tener sesión/auth.)
+export const dynamic = "force-dynamic";
 
-export default function HomeDashboard() {
+type PlanItem = { id: string; title: string; ruta: string };
+
+export default async function HomeDashboard() {
   const xp = 120;
   const xpMeta = 200;
 
+  const supabase = anonClient();
+  const { data } = await supabase
+    .from("lessons")
+    .select("id,title,sort_order,units!inner(routes!inner(slug,name))")
+    .eq("units.routes.slug", "call-center")
+    .order("sort_order")
+    .limit(3);
+
+  const plan: PlanItem[] = ((data ?? []) as any[]).map((l) => {
+    // PostgREST devuelve la relación to-one como objeto; toleramos ambos.
+    const unit = Array.isArray(l.units) ? l.units[0] : l.units;
+    const route = Array.isArray(unit?.routes) ? unit.routes[0] : unit?.routes;
+    return { id: l.id, title: l.title, ruta: route?.name ?? "Práctica" };
+  });
+
   return (
-    <main className="mx-auto max-w-2xl px-5 py-10">
+    <main className="mx-auto max-w-2xl px-5 pt-10 pb-28">
       <div className="mb-4 flex justify-end">
         <AuthStatus />
       </div>
+
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CefrBadge level="A2" />
@@ -57,28 +72,32 @@ export default function HomeDashboard() {
       <p className="text-ink-muted">Sesiones cortas, una cosa a la vez.</p>
 
       <div className="mt-4 space-y-3">
-        {PLAN.map((a, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 rounded-lg border border-line bg-surface p-4"
+        {plan.map((a) => (
+          <Link
+            key={a.id}
+            href={`/sesion?leccion=${a.id}`}
+            className="flex items-center gap-3 rounded-lg border border-line bg-surface p-4 transition hover:border-primary"
           >
             <div className="grid h-11 w-11 flex-none place-items-center rounded-full bg-surface3 text-xl">
-              {a.emoji}
+              🎧
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-[11px] font-bold uppercase tracking-wide text-secondary">
-                {a.uso}
+                {a.ruta}
               </div>
               <div className="truncate font-semibold text-ink-bright">
-                {a.titulo}
+                {a.title}
               </div>
-              <div className="text-xs text-ink-muted">
-                {a.min} min · +{a.xp} XP
-              </div>
+              <div className="text-xs text-ink-muted">5 min · +20 XP</div>
             </div>
             <span className="text-ink-dim">›</span>
-          </div>
+          </Link>
         ))}
+        {plan.length === 0 && (
+          <p className="text-sm text-ink-muted">
+            Aún no hay lecciones disponibles.
+          </p>
+        )}
       </div>
 
       <div className="mt-8 rounded-lg border border-line bg-surface2 p-4">

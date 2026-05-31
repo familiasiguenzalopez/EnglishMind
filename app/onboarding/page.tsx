@@ -25,7 +25,7 @@ export default async function Onboarding() {
   const routes = (data ?? []) as Route[];
 
   return (
-    <main className="mx-auto max-w-2xl px-5 py-12">
+    <main className="mx-auto max-w-2xl px-5 pt-12 pb-28">
       <header className="mb-8 flex items-center gap-3">
         <span
           className="h-3.5 w-3.5 rounded-[4px]"

@@ -27,7 +27,7 @@ export default async function Tutores({
   const tutors = (data ?? []) as TutorRow[];
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-12">
+    <main className="mx-auto max-w-3xl px-5 pt-12 pb-28">
       <h1 className="font-display text-3xl font-extrabold text-ink-bright">
         Elige tu tutor
       </h1>
