@@ -53,10 +53,10 @@ export default async function Tutores({
 
       <div className="mt-8">
         <Link
-          href="/home"
+          href="/sesion"
           className="inline-block rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-white transition hover:bg-primary-dim"
         >
-          Continuar
+          Empezar a practicar
         </Link>
       </div>
     </main>

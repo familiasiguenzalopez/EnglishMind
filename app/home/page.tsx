@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CefrBadge } from "@/components/ui/CefrBadge";
 
 // Home dashboard (esqueleto). Datos de ejemplo; se conectarán al progreso real
@@ -31,6 +32,13 @@ export default function HomeDashboard() {
           style={{ width: `${Math.round((xp / xpMeta) * 100)}%` }}
         />
       </div>
+
+      <Link
+        href="/sesion"
+        className="mt-6 block rounded-lg bg-primary px-5 py-3 text-center text-sm font-bold text-white transition hover:bg-primary-dim"
+      >
+        Practicar con tu tutor →
+      </Link>
 
       <h1 className="mt-8 font-display text-2xl font-extrabold text-ink-bright">
         Tu plan de hoy
