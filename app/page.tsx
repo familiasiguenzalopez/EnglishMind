@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CefrBadge, CEFR_LEVELS } from "@/components/ui/CefrBadge";
 import { RehearsalToggle } from "@/components/ui/RehearsalToggle";
 import { PronunciationScore } from "@/components/ui/PronunciationScore";
@@ -39,10 +40,16 @@ export default function Home() {
           Fundaciones · Fase 0
         </span>
       </header>
-      <p className="mb-10 max-w-prose text-ink-muted">
+      <p className="mb-5 max-w-prose text-ink-muted">
         Design system y componentes pedagógicos núcleo. Cada decisión sirve a la
         Sección 00: el error informa, no castiga.
       </p>
+      <Link
+        href="/onboarding"
+        className="mb-10 inline-block rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-white transition hover:bg-primary-dim"
+      >
+        Probar el flujo de la app →
+      </Link>
 
       <Section title="Niveles CEFR">
         <div className="flex flex-wrap gap-2">
