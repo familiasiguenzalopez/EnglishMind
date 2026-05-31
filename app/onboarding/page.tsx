@@ -51,7 +51,7 @@ export default async function Onboarding() {
         {routes.map((r) => (
           <Link
             key={r.slug}
-            href={`/tutores?ruta=${r.slug}`}
+            href={`/ruta/${r.slug}`}
             className="rounded-lg border border-line bg-surface p-4 transition hover:border-primary"
           >
             <div className="text-2xl">{ROUTE_EMOJI[r.slug] ?? "✨"}</div>
