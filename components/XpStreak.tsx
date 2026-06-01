@@ -2,27 +2,36 @@
 
 import { useEffect, useState } from "react";
 import { CefrBadge } from "@/components/ui/CefrBadge";
-import { getState, type GamifyState } from "@/lib/gamify";
+import { loadState } from "@/lib/gamify";
 
-// Cabecera del home: nivel + racha + XP, leídos del estado on-device.
+// Cabecera del home: nivel + racha + XP. Lee del servidor si hay sesión
+// (persistente, multidispositivo); si no, del estado on-device.
 const META = 200; // XP por "nivel" de progreso (cosmético)
 
 export function XpStreak() {
-  const [s, setS] = useState<GamifyState | null>(null);
+  const [xp, setXp] = useState(0);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
-    const refresh = () => setS(getState());
-    refresh();
-    window.addEventListener("em-gamify", refresh);
-    window.addEventListener("em-celebrate", refresh);
+    let mounted = true;
+    loadState().then((s) => {
+      if (mounted) {
+        setXp(s.xp);
+        setStreak(s.streakDays);
+      }
+    });
+    const onGamify = (e: Event) => {
+      const d = (e as CustomEvent).detail ?? {};
+      if (typeof d.xp === "number") setXp(d.xp);
+      if (typeof d.streakDays === "number") setStreak(d.streakDays);
+    };
+    window.addEventListener("em-gamify", onGamify);
     return () => {
-      window.removeEventListener("em-gamify", refresh);
-      window.removeEventListener("em-celebrate", refresh);
+      mounted = false;
+      window.removeEventListener("em-gamify", onGamify);
     };
   }, []);
 
-  const xp = s?.xp ?? 0;
-  const streak = s?.streakDays ?? 0;
   const pct = Math.min(100, Math.round(((xp % META) / META) * 100));
 
   return (

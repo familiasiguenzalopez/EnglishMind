@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { touchStreak } from "@/lib/gamify";
 
 // Mascota + toast que CELEBRA y acompaña, nunca culpa ni presiona.
-// Escucha eventos "em-celebrate" (XP/logros) y saluda el regreso al montar.
+// Escucha "em-celebrate" (XP/logros) y saluda el regreso al montar.
 
 type Pop = { id: number; text: string; mascot: string };
 
@@ -18,14 +18,12 @@ export function Celebration() {
       setTimeout(() => setPops((ps) => ps.filter((x) => x.id !== id)), 3400);
     }
 
-    try {
-      const { returned } = touchStreak();
-      if (returned) {
-        push("¡Qué bueno verte de nuevo! Seguimos donde lo dejaste.", "🦜");
-      }
-    } catch {
-      /* ignore */
-    }
+    touchStreak()
+      .then(({ returned }) => {
+        if (returned)
+          push("¡Qué bueno verte de nuevo! Seguimos donde lo dejaste.", "🦜");
+      })
+      .catch(() => {});
 
     function onCelebrate(e: Event) {
       const d = (e as CustomEvent).detail ?? {};

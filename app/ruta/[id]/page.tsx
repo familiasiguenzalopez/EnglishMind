@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { anonClient } from "@/lib/supabase/anon";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import { CefrBadge, type CefrLevel } from "@/components/ui/CefrBadge";
 
 // Detalle de ruta: unidades (con su can-do) y lecciones de escenario.
@@ -22,6 +23,18 @@ export default async function RutaPage({
   params: Promise<{ id: string }>;
 }) {
   const { id: slug } = await params;
+
+  // Si hay sesión, persiste esta ruta como el objetivo del perfil.
+  try {
+    const ssr = await createServerClient();
+    const {
+      data: { user },
+    } = await ssr.auth.getUser();
+    if (user) await ssr.from("profiles").update({ goal: slug }).eq("id", user.id);
+  } catch {
+    /* invitado o sin sesión: se ignora */
+  }
+
   const supabase = anonClient();
   const { data } = await supabase
     .from("routes")
