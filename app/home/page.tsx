@@ -66,6 +66,21 @@ export default async function HomeDashboard() {
         Tu ruta: Call center →
       </Link>
 
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <Link
+          href="/planes"
+          className="rounded-lg border border-line bg-surface px-4 py-3 text-center text-sm font-semibold text-ink transition hover:border-primary"
+        >
+          💎 Planes
+        </Link>
+        <Link
+          href="/marketplace"
+          className="rounded-lg border border-line bg-surface px-4 py-3 text-center text-sm font-semibold text-ink transition hover:border-primary"
+        >
+          🛒 Marketplace
+        </Link>
+      </div>
+
       <h1 className="mt-8 font-display text-2xl font-extrabold text-ink-bright">
         Tu plan de hoy
       </h1>
