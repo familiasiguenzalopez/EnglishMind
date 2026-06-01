@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { award } from "@/lib/gamify";
 
 // "Tu progreso, en tu propia voz" (Lote 1 · #6) — shell credential-free.
 // Graba con MediaRecorder y guarda EN EL DISPOSITIVO (localStorage), opt-in.
@@ -79,6 +80,12 @@ export default function Progreso() {
         const dataUrl = await blobToDataUrl(blob);
         const cap: Capsule = { id: crypto.randomUUID(), ts: Date.now(), dataUrl };
         persist([...capsules, cap].sort((a, b) => a.ts - b.ts));
+        award(
+          20,
+          capsules.length === 0
+            ? { id: "first-capsule", label: "Tu primera cápsula de voz" }
+            : undefined,
+        );
         stream.getTracks().forEach((t) => t.stop());
       };
       recRef.current = rec;

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { RehearsalToggle } from "@/components/ui/RehearsalToggle";
 import { cn } from "@/lib/cn";
+import { award } from "@/lib/gamify";
 
 // Chat de práctica con el tutor. Si recibe un "scenario", el tutor hace
 // role-play (call center) y el "goal" se muestra como objetivo de la lección.
@@ -64,6 +65,7 @@ export function ChatSession({
       if (!data?.reply) throw new Error(data?.error ?? "sin respuesta");
       const meta = data.model ? `vía ${data.model} · Nivel ${data.tier}` : undefined;
       setMessages((m) => [...m, { role: "tutor", text: data.reply, meta }]);
+      award(10, { id: "first-conversation", label: "Hablaste con tu tutor" });
     } catch {
       setError("El tutor no pudo responder ahora. Vamos de nuevo cuando quieras.");
     } finally {

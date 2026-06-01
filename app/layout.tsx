@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/BottomNav";
+import { Celebration } from "@/components/Celebration";
 
 const display = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -46,6 +47,7 @@ export default function RootLayout({
       <body>
         {children}
         <BottomNav />
+        <Celebration />
       </body>
     </html>
   );

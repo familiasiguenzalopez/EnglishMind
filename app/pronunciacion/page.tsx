@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PronunciationScore, type PronStatus } from "@/components/ui/PronunciationScore";
+import { award } from "@/lib/gamify";
 
 // Práctica de pronunciación con pares mínimos (prioridad para hispanohablantes).
 // v1 credential-free: speechSynthesis = modelo nativo; SpeechRecognition =
@@ -98,7 +99,10 @@ export default function Pronunciacion() {
       for (let i = 0; i < r.length; i++) alts.push(clean(String(r[i].transcript)));
       const t = clean(target.word);
       const p = clean(target.partner);
-      if (alts.some((a) => a === t)) setResult({ kind: "correct", heard: alts[0] });
+      if (alts.some((a) => a === t)) {
+        setResult({ kind: "correct", heard: alts[0] });
+        award(15, { id: "first-clear-sound", label: "Tu primer sonido claro" });
+      }
       else if (alts.some((a) => a === p)) setResult({ kind: "improve", heard: target.partner });
       else setResult({ kind: "unintelligible", heard: alts[0] ?? "" });
     };

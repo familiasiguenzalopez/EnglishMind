@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { CefrBadge } from "@/components/ui/CefrBadge";
 import { AuthStatus } from "@/components/AuthStatus";
+import { XpStreak } from "@/components/XpStreak";
 import { anonClient } from "@/lib/supabase/anon";
 
 // Home dashboard. El "plan de hoy" se arma con lecciones reales de Call center.
@@ -10,9 +10,6 @@ export const dynamic = "force-dynamic";
 type PlanItem = { id: string; title: string; ruta: string };
 
 export default async function HomeDashboard() {
-  const xp = 120;
-  const xpMeta = 200;
-
   const supabase = anonClient();
   const { data } = await supabase
     .from("lessons")
@@ -34,23 +31,7 @@ export default async function HomeDashboard() {
         <AuthStatus />
       </div>
 
-      <header className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <CefrBadge level="A2" />
-          <span className="text-sm text-ink-muted">Tu nivel</span>
-        </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="font-semibold text-ink">🔥 3 días</span>
-          <span className="text-ink-muted">{xp} XP</span>
-        </div>
-      </header>
-
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface3">
-        <div
-          className="h-full rounded-full bg-secondary"
-          style={{ width: `${Math.round((xp / xpMeta) * 100)}%` }}
-        />
-      </div>
+      <XpStreak />
 
       <Link
         href="/sesion"
