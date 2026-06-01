@@ -30,6 +30,7 @@ export default async function SesionPage({
       scenario={content.scenario}
       starter={content.starter}
       goal={content.goal}
+      lessonId={leccion}
     />
   );
 }

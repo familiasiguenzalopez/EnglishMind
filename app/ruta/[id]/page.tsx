@@ -24,13 +24,22 @@ export default async function RutaPage({
 }) {
   const { id: slug } = await params;
 
-  // Si hay sesión, persiste esta ruta como el objetivo del perfil.
+  // Si hay sesión: persiste la ruta como objetivo y lee lecciones completadas.
+  const completed = new Set<string>();
   try {
     const ssr = await createServerClient();
     const {
       data: { user },
     } = await ssr.auth.getUser();
-    if (user) await ssr.from("profiles").update({ goal: slug }).eq("id", user.id);
+    if (user) {
+      await ssr.from("profiles").update({ goal: slug }).eq("id", user.id);
+      const { data: prog } = await ssr
+        .from("progress")
+        .select("lesson_id")
+        .eq("user_id", user.id)
+        .eq("status", "done");
+      (prog ?? []).forEach((p: { lesson_id: string }) => completed.add(p.lesson_id));
+    }
   } catch {
     /* invitado o sin sesión: se ignora */
   }
@@ -91,8 +100,15 @@ export default async function RutaPage({
                     href={`/sesion?leccion=${l.id}`}
                     className="flex items-center justify-between rounded-md border border-line bg-surface2 px-3 py-2.5 text-sm transition hover:border-primary"
                   >
-                    <span className="text-ink">{l.title}</span>
-                    <span className="text-ink-dim">Practicar ›</span>
+                    <span className="text-ink">
+                      {completed.has(l.id) && (
+                        <span className="text-secondary">✓ </span>
+                      )}
+                      {l.title}
+                    </span>
+                    <span className="text-ink-dim">
+                      {completed.has(l.id) ? "Repasar ›" : "Practicar ›"}
+                    </span>
                   </Link>
                 ))}
             </div>

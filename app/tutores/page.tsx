@@ -1,11 +1,11 @@
-import Link from "next/link";
 import { anonClient } from "@/lib/supabase/anon";
-import { TutorCard } from "@/components/ui/TutorCard";
+import { createClient as createServerClient } from "@/lib/supabase/server";
+import { TutorPicker } from "@/components/TutorPicker";
 
-// Selección de tutor — lee los 6 tutores reales de Supabase.
 export const dynamic = "force-dynamic";
 
 type TutorRow = {
+  id: string;
   slug: string;
   name: string;
   role: string;
@@ -19,12 +19,32 @@ export default async function Tutores({
   searchParams: Promise<{ ruta?: string }>;
 }) {
   const { ruta } = await searchParams;
+
   const supabase = anonClient();
   const { data } = await supabase
     .from("tutors")
-    .select("slug,name,role,accent,emoji")
+    .select("id,slug,name,role,accent,emoji")
     .order("sort_order");
   const tutors = (data ?? []) as TutorRow[];
+
+  // Tutor activo del usuario logueado (para resaltarlo)
+  let activeId: string | null = null;
+  try {
+    const ssr = await createServerClient();
+    const {
+      data: { user },
+    } = await ssr.auth.getUser();
+    if (user) {
+      const { data: prof } = await ssr
+        .from("profiles")
+        .select("active_tutor_id")
+        .eq("id", user.id)
+        .single();
+      activeId = (prof?.active_tutor_id as string | null) ?? null;
+    }
+  } catch {
+    /* invitado */
+  }
 
   return (
     <main className="mx-auto max-w-3xl px-5 pt-12 pb-28">
@@ -33,31 +53,17 @@ export default async function Tutores({
       </h1>
       <p className="mt-2 text-ink-muted">
         Cada uno enseña algo distinto. Puedes cambiar cuando quieras
-        {ruta ? <> · ruta: <span className="text-ink">{ruta}</span></> : null}.
+        {ruta ? (
+          <>
+            {" "}
+            · ruta: <span className="text-ink">{ruta}</span>
+          </>
+        ) : null}
+        .
       </p>
 
-      <div className="mt-7 grid gap-3 sm:grid-cols-2">
-        {tutors.map((t, i) => (
-          <TutorCard
-            key={t.slug}
-            active={i === 0}
-            tutor={{
-              name: t.name,
-              role: t.role,
-              accent: t.accent ?? "",
-              emoji: t.emoji ?? undefined,
-            }}
-          />
-        ))}
-      </div>
-
-      <div className="mt-8">
-        <Link
-          href="/sesion"
-          className="inline-block rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-white transition hover:bg-primary-dim"
-        >
-          Empezar a practicar
-        </Link>
+      <div className="mt-7">
+        <TutorPicker tutors={tutors} initialActiveId={activeId} />
       </div>
     </main>
   );

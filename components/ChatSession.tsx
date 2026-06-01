@@ -18,10 +18,12 @@ export function ChatSession({
   scenario,
   starter,
   goal,
+  lessonId,
 }: {
   scenario?: string;
   starter?: string;
   goal?: string;
+  lessonId?: string;
 }) {
   const [messages, setMessages] = useState<Msg[]>([
     {
@@ -38,6 +40,7 @@ export function ChatSession({
   const [error, setError] = useState<string | null>(null);
   const [lastSent, setLastSent] = useState<string | null>(null);
   const [secs, setSecs] = useState(0);
+  const [done, setDone] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -82,6 +85,32 @@ export function ChatSession({
     await ask(text);
   }
 
+  async function finish() {
+    if (done) return;
+    setDone(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user && lessonId) {
+        await supabase.from("progress").upsert(
+          {
+            user_id: user.id,
+            lesson_id: lessonId,
+            status: "done",
+            xp: 25,
+            completed_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,lesson_id" },
+        );
+      }
+    } catch {
+      /* invitado o error: el XP local igual cuenta */
+    }
+    await award(25, { id: "lesson-done", label: "Completaste una lección" });
+  }
+
   return (
     <main className="mx-auto flex h-[100dvh] max-w-2xl flex-col px-4 py-4">
       <header className="flex items-center justify-between gap-3 border-b border-line pb-3">
@@ -111,6 +140,22 @@ export function ChatSession({
           </span>
           <p className="text-ink">{goal}</p>
         </div>
+      )}
+
+      {lessonId && (
+        <button
+          type="button"
+          onClick={finish}
+          disabled={done}
+          className={
+            "mt-3 w-full rounded-md px-4 py-2.5 text-sm font-bold transition " +
+            (done
+              ? "bg-secondary text-bg"
+              : "border border-line bg-surface2 text-ink-bright hover:border-primary")
+          }
+        >
+          {done ? "✓ Lección completada (+25 XP)" : "Terminar lección"}
+        </button>
       )}
 
       <div className="py-3">
