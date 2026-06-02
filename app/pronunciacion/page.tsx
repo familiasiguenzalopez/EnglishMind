@@ -5,6 +5,8 @@ import { PronunciationScore, type PronStatus } from "@/components/ui/Pronunciati
 import { award } from "@/lib/gamify";
 import { loadSoundMap, recordSound } from "@/lib/soundmap";
 import { AzurePronunciation } from "@/components/AzurePronunciation";
+import { LessonBar } from "@/components/LessonBar";
+import { createClient } from "@/lib/supabase/client";
 
 // Práctica de pronunciación con pares mínimos (prioridad para hispanohablantes).
 // v1 credential-free: speechSynthesis = modelo nativo; SpeechRecognition =
@@ -69,11 +71,28 @@ export default function Pronunciacion() {
   const [result, setResult] = useState<{ kind: PronStatus; heard: string } | null>(null);
   const [supported, setSupported] = useState(true);
   const [map, setMap] = useState<Record<string, string>>({});
+  const [lessonId, setLessonId] = useState<string | null>(null);
+  const [lessonGoal, setLessonGoal] = useState<string | null>(null);
+  const [lessonRef, setLessonRef] = useState<string | null>(null);
 
   useEffect(() => {
     const w = window as unknown as Record<string, unknown>;
     setSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
     loadSoundMap().then(setMap);
+    const id = new URLSearchParams(window.location.search).get("leccion");
+    if (id) {
+      setLessonId(id);
+      createClient()
+        .from("lessons")
+        .select("content")
+        .eq("id", id)
+        .single()
+        .then(({ data }) => {
+          const c = (data?.content ?? {}) as { goal?: string; reference?: string };
+          setLessonGoal(c.goal ?? null);
+          setLessonRef(c.reference ?? null);
+        });
+    }
   }, []);
 
   function pick(sound: Sound, word: string, partner: string) {
@@ -156,8 +175,10 @@ export default function Pronunciacion() {
         te digo si sonó claro.
       </p>
 
+      <LessonBar lessonId={lessonId} goal={lessonGoal} />
+
       <div className="mt-5">
-        <AzurePronunciation />
+        <AzurePronunciation lessonSentence={lessonRef ?? undefined} />
       </div>
 
       {/* Mapa de sonidos (tu progreso, persistente) */}

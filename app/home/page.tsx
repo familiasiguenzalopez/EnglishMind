@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AuthStatus } from "@/components/AuthStatus";
 import { XpStreak } from "@/components/XpStreak";
 import { loadLearningPath } from "@/lib/loadPath";
+import { lessonHref } from "@/lib/path";
 
 // Home = hub metodológico: retoma el camino (continuar donde quedaste, con la
 // meta can-do actual), y debajo las prácticas y el resto. La barra inferior
@@ -76,7 +77,7 @@ export default async function HomeDashboard() {
 
         {path.next ? (
           <Link
-            href={`/sesion?leccion=${path.next.id}`}
+            href={lessonHref(path.next.kind, path.next.id)}
             className="mt-4 flex items-center justify-between rounded-md bg-primary px-4 py-3 text-sm font-bold text-white transition hover:bg-primary-dim"
           >
             <span>

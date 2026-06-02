@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { XpStreak } from "@/components/XpStreak";
 import { CefrBadge, type CefrLevel } from "@/components/ui/CefrBadge";
-import { cefrRange, lessonIcon } from "@/lib/path";
+import { cefrRange, lessonHref, lessonIcon } from "@/lib/path";
 import { loadLearningPath } from "@/lib/loadPath";
 
 // Camino de aprendizaje (la "columna" metodológica). Muestra la ruta activa
@@ -65,7 +65,7 @@ export default async function Aprender() {
         {/* Continuar */}
         {path.next ? (
           <Link
-            href={`/sesion?leccion=${path.next.id}`}
+            href={lessonHref(path.next.kind, path.next.id)}
             className="mt-4 flex items-center justify-between rounded-md bg-primary px-4 py-3 text-sm font-bold text-white transition hover:bg-primary-dim"
           >
             <span>
@@ -166,7 +166,7 @@ export default async function Aprender() {
                       }
                     />
                     <div className="min-w-0 flex-1">
-                      {n.state === "locked" ? inner : <Link href={`/sesion?leccion=${n.id}`}>{inner}</Link>}
+                      {n.state === "locked" ? inner : <Link href={lessonHref(n.kind, n.id)}>{inner}</Link>}
                     </div>
                   </li>
                 );

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { LessonBar } from "@/components/LessonBar";
 
 // Feedback de escritura (NLP) — el alumno escribe, el coach resalta una
 // fortaleza y UN punto a mejorar (recast), nunca reescribe. Vía writing-coach.
@@ -21,6 +22,34 @@ export default function Escritura() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lessonId, setLessonId] = useState<string | null>(null);
+  const [lessonGoal, setLessonGoal] = useState<string | null>(null);
+  const [lessonPrompt, setLessonPrompt] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("leccion");
+    if (!id) return;
+    setLessonId(id);
+    createClient()
+      .from("lessons")
+      .select("content")
+      .eq("id", id)
+      .single()
+      .then(({ data }) => {
+        const c = (data?.content ?? {}) as {
+          goal?: string;
+          prompt?: string;
+          genre?: string;
+          level?: string;
+        };
+        setLessonGoal(c.goal ?? null);
+        setLessonPrompt(c.prompt ?? null);
+        if (c.genre && GENRES.includes(c.genre)) setGenre(c.genre);
+        if (c.level && (LEVELS as readonly string[]).includes(c.level)) {
+          setLevel(c.level as (typeof LEVELS)[number]);
+        }
+      });
+  }, []);
 
   async function review() {
     if (!text.trim() || loading) return;
@@ -51,6 +80,16 @@ export default function Escritura() {
         Escribe en inglés. Te resalto lo bueno y un solo punto a mejorar — nunca
         reescribo por ti.
       </p>
+
+      <div className="mt-5">
+        <LessonBar lessonId={lessonId} goal={lessonGoal} ready={!!feedback} />
+        {lessonPrompt && (
+          <div className="mb-4 rounded-md border border-line bg-surface2 px-3 py-2 text-sm text-ink">
+            <span className="font-bold text-secondary">Consigna · </span>
+            {lessonPrompt}
+          </div>
+        )}
+      </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
         {GENRES.map((g) => (

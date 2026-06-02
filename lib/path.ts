@@ -38,6 +38,14 @@ export function lessonIcon(kind: string): string {
   return KIND_ICON[kind] ?? "🎧";
 }
 
+// Cada tipo de lección abre la actividad correspondiente (mezcla de destrezas
+// dentro del mismo camino).
+export function lessonHref(kind: string, id: string): string {
+  if (kind === "pronunciation") return `/pronunciacion?leccion=${id}`;
+  if (kind === "writing") return `/escritura?leccion=${id}`;
+  return `/sesion?leccion=${id}`;
+}
+
 function bySort<T extends { sort_order: number }>(a: T, b: T) {
   return a.sort_order - b.sort_order;
 }

@@ -29,7 +29,8 @@ function tone(v: number | null) {
   return "text-danger";
 }
 
-export function AzurePronunciation() {
+export function AzurePronunciation({ lessonSentence }: { lessonSentence?: string } = {}) {
+  const SENTS = lessonSentence ? [lessonSentence, ...SENTENCES] : SENTENCES;
   const [refIdx, setRefIdx] = useState(0);
   const [recording, setRecording] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -37,7 +38,7 @@ export function AzurePronunciation() {
   const [error, setError] = useState<string | null>(null);
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const reference = SENTENCES[refIdx];
+  const reference = SENTS[refIdx];
 
   async function start() {
     setError(null);
@@ -102,7 +103,7 @@ export function AzurePronunciation() {
       <button
         type="button"
         onClick={() => {
-          setRefIdx((i) => (i + 1) % SENTENCES.length);
+          setRefIdx((i) => (i + 1) % SENTS.length);
           setResult(null);
           setError(null);
         }}
