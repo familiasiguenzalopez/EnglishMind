@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CefrBadge } from "@/components/ui/CefrBadge";
+import { CefrBadge, type CefrLevel } from "@/components/ui/CefrBadge";
 import { loadState } from "@/lib/gamify";
+import { loadCefr } from "@/lib/level";
 
 // Cabecera del home: nivel + racha + XP. Lee del servidor si hay sesión
 // (persistente, multidispositivo); si no, del estado on-device.
@@ -11,6 +12,7 @@ const META = 200; // XP por "nivel" de progreso (cosmético)
 export function XpStreak() {
   const [xp, setXp] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [cefr, setCefr] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -19,6 +21,9 @@ export function XpStreak() {
         setXp(s.xp);
         setStreak(s.streakDays);
       }
+    });
+    loadCefr().then((c) => {
+      if (mounted) setCefr(c);
     });
     const onGamify = (e: Event) => {
       const d = (e as CustomEvent).detail ?? {};
@@ -38,7 +43,7 @@ export function XpStreak() {
     <>
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <CefrBadge level="A2" />
+          <CefrBadge level={(cefr ?? "A1") as CefrLevel} />
           <span className="text-sm text-ink-muted">Tu nivel</span>
         </div>
         <div className="flex items-center gap-4 text-sm">
