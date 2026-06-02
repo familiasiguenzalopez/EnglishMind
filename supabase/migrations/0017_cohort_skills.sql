@@ -42,8 +42,8 @@ begin
   )
   select
     st.category,
-    count(distinct st.user_id) filter (where st.streak <= 1)::int as working_students,
-    count(distinct st.user_id) filter (where st.cnt >= 2 and st.streak >= 2)::int as improving_students,
+    (count(distinct st.user_id) filter (where st.streak <= 1))::int as working_students,
+    (count(distinct st.user_id) filter (where st.cnt >= 2 and st.streak >= 2))::int as improving_students,
     sum(st.cnt)::int as mentions
   from streaks st
   group by st.category
