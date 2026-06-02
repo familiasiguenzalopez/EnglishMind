@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { anonClient } from "@/lib/supabase/anon";
+import { skillLabel } from "@/lib/skills";
 
 type Membership = {
   org_id: string;
@@ -14,6 +15,12 @@ type Membership = {
 };
 type Cohort = { id: string; name: string; join_code: string | null };
 type ReportRow = { name: string; cefr: string; xp: number; streak: number; lessons: number };
+type SkillRow = {
+  category: string;
+  working_students: number;
+  improving_students: number;
+  mentions: number;
+};
 
 const STAFF = ["admin", "manager", "instructor"];
 
@@ -26,6 +33,7 @@ export default function Org() {
   const [orgType, setOrgType] = useState("colegio");
   const [newCohort, setNewCohort] = useState<Record<string, { name: string; route: string }>>({});
   const [report, setReport] = useState<Record<string, ReportRow[]>>({});
+  const [skills, setSkills] = useState<Record<string, SkillRow[]>>({});
   const [busy, setBusy] = useState(false);
 
   async function load() {
@@ -101,10 +109,18 @@ export default function Org() {
         delete c[cohortId];
         return c;
       });
+      setSkills((s) => {
+        const c = { ...s };
+        delete c[cohortId];
+        return c;
+      });
       return;
     }
-    const { data } = await createClient().rpc("cohort_report", { p_cohort: cohortId });
+    const supabase = createClient();
+    const { data } = await supabase.rpc("cohort_report", { p_cohort: cohortId });
     setReport((r) => ({ ...r, [cohortId]: (data ?? []) as ReportRow[] }));
+    const { data: sk } = await supabase.rpc("cohort_skills", { p_cohort: cohortId });
+    setSkills((s) => ({ ...s, [cohortId]: (sk ?? []) as SkillRow[] }));
   }
 
   const staffOrgs = [
@@ -191,6 +207,52 @@ export default function Org() {
                             </tbody>
                           </table>
                         )}
+                      </div>
+                    )}
+                    {skills[c.id] && skills[c.id].length > 0 && (
+                      <div className="mt-3 border-t border-line pt-3">
+                        {skills[c.id].some((s) => s.improving_students > 0) && (
+                          <div className="mb-2">
+                            <div className="text-[11px] font-bold uppercase tracking-wide text-secondary">
+                              ✅ El grupo va superando
+                            </div>
+                            <div className="mt-1 flex flex-wrap gap-1.5">
+                              {skills[c.id]
+                                .filter((s) => s.improving_students > 0)
+                                .map((s) => (
+                                  <span
+                                    key={"i-" + s.category}
+                                    className="rounded-full border border-secondary bg-surface2 px-2 py-0.5 text-[11px] text-ink-bright"
+                                  >
+                                    {skillLabel(s.category)} · {s.improving_students}
+                                  </span>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+                        {skills[c.id].some((s) => s.working_students > 0) && (
+                          <div>
+                            <div className="text-[11px] font-bold uppercase tracking-wide text-warning">
+                              🎯 Retos del grupo
+                            </div>
+                            <div className="mt-1 flex flex-wrap gap-1.5">
+                              {skills[c.id]
+                                .filter((s) => s.working_students > 0)
+                                .map((s) => (
+                                  <span
+                                    key={"w-" + s.category}
+                                    className="rounded-full border border-line bg-surface2 px-2 py-0.5 text-[11px] text-ink"
+                                  >
+                                    {skillLabel(s.category)} · {s.working_students}
+                                  </span>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+                        <p className="mt-2 text-[10px] leading-relaxed text-ink-dim">
+                          Agregado y anónimo: cuántos alumnos comparten cada reto —
+                          nunca qué dijo o escribió nadie.
+                        </p>
                       </div>
                     )}
                   </div>
