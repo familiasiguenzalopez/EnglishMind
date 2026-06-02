@@ -236,12 +236,12 @@ export function sceneForLesson(
   const has = (...k: string[]) => k.some((x) => s.includes(x));
   if (has("support line", "internet", "bill", "router", "service has been down", "charged twice", "charge on")) return SCENE_MAP["call-center"];
   if (has("hiring manager", "interview", "interviewer", "salary", "compensation", "strength")) return SCENE_MAP["interview"];
-  if (has("nurse", "clinic", "brings you in")) return SCENE_MAP["doctor"];
+  if (has("nurse", "clinic", "brings you in", "pharmacist", "pharmacy", "symptom")) return SCENE_MAP["doctor"];
   if (has("waiter", "restaurant", "menu", "drink")) return SCENE_MAP["restaurant"];
   if (has("barista", "coffee")) return SCENE_MAP["cafe"];
   if (has("directions", "lost", "train station")) return SCENE_MAP["directions"];
-  if (has("stand-up", "teammate", "blocker", "blocked", "remote")) return SCENE_MAP["office"];
-  if (has("government office", "front-desk clerk", "school", "secretary", "enroll", "register")) return SCENE_MAP["clerk"];
+  if (has("stand-up", "teammate", "blocker", "blocked", "remote", "video meeting", "feedback")) return SCENE_MAP["office"];
+  if (has("government office", "front-desk clerk", "school", "secretary", "enroll", "register", "bank teller", "landlord", "apartment", "rent", "deposit", "checking account")) return SCENE_MAP["clerk"];
   if (has("check-in", "reservation", "hotel", "guest")) return SCENE_MAP["hotel"];
   if (has("passport", "airline", "traveler", "luggage")) return SCENE_MAP["airport"];
   return SCENE_MAP["tutor"];
