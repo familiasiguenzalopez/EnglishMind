@@ -114,6 +114,12 @@ export default function Admin() {
         Por funcionalidad, elige el nivel activo y el proveedor/modelo. La app usa
         esta config con fallback automático (1 → 2 → 3).
       </p>
+      <Link
+        href="/admin/planes"
+        className="mt-3 inline-block rounded-md border border-line bg-surface2 px-4 py-2 text-sm font-semibold text-ink-bright transition hover:border-primary"
+      >
+        💳 Creador de suscripciones →
+      </Link>
 
       {state === "loading" && <p className="mt-6 text-ink-muted">Cargando…</p>}
 
