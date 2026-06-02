@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { PronunciationScore, type PronStatus } from "@/components/ui/PronunciationScore";
 import { award } from "@/lib/gamify";
+import { loadSoundMap, recordSound } from "@/lib/soundmap";
 
 // Práctica de pronunciación con pares mínimos (prioridad para hispanohablantes).
 // v1 credential-free: speechSynthesis = modelo nativo; SpeechRecognition =
@@ -46,6 +47,13 @@ const SOUNDS: Sound[] = [
     tip: "/ʃ/ es un soplo continuo (sh…); /tʃ/ empieza con un toque de lengua (ch).",
     pairs: [["sheep", "cheap"], ["ship", "chip"], ["share", "chair"]],
   },
+  {
+    id: "ae",
+    label: "/æ/ vs /e/",
+    note: "bad vs. bed — el español no tiene /æ/.",
+    tip: "Para /æ/ (bad) abre más la boca, casi entre 'a' y 'e'; /e/ (bed) es tu 'e' normal.",
+    pairs: [["bad", "bed"], ["man", "men"], ["bat", "bet"], ["sad", "said"]],
+  },
 ];
 
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z]/g, "");
@@ -59,10 +67,12 @@ export default function Pronunciacion() {
   const [listening, setListening] = useState(false);
   const [result, setResult] = useState<{ kind: PronStatus; heard: string } | null>(null);
   const [supported, setSupported] = useState(true);
+  const [map, setMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const w = window as unknown as Record<string, unknown>;
     setSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
+    loadSoundMap().then(setMap);
   }, []);
 
   function pick(sound: Sound, word: string, partner: string) {
@@ -99,12 +109,27 @@ export default function Pronunciacion() {
       for (let i = 0; i < r.length; i++) alts.push(clean(String(r[i].transcript)));
       const t = clean(target.word);
       const p = clean(target.partner);
+      let kind: PronStatus;
+      let heard: string;
       if (alts.some((a) => a === t)) {
-        setResult({ kind: "correct", heard: alts[0] });
+        kind = "correct";
+        heard = alts[0];
         award(15, { id: "first-clear-sound", label: "Tu primer sonido claro" });
+      } else if (alts.some((a) => a === p)) {
+        kind = "improve";
+        heard = target.partner;
+      } else {
+        kind = "unintelligible";
+        heard = alts[0] ?? "";
       }
-      else if (alts.some((a) => a === p)) setResult({ kind: "improve", heard: target.partner });
-      else setResult({ kind: "unintelligible", heard: alts[0] ?? "" });
+      setResult({ kind, heard });
+      void recordSound(sound.id, kind, scoreValue[kind]);
+      setMap((prev) => {
+        const rank: Record<PronStatus, number> = { correct: 3, improve: 2, unintelligible: 1 };
+        const cur = prev[sound.id] as PronStatus | undefined;
+        if (!cur || rank[kind] > rank[cur]) return { ...prev, [sound.id]: kind };
+        return prev;
+      });
     };
     rec.onerror = () => {
       setListening(false);
@@ -129,6 +154,33 @@ export default function Pronunciacion() {
         La meta es que te entiendan, no sonar gringo. Escucha el modelo y repítelo;
         te digo si sonó claro.
       </p>
+
+      {/* Mapa de sonidos (tu progreso, persistente) */}
+      <div className="mt-5 rounded-lg border border-line bg-surface2 p-3">
+        <div className="text-[11px] font-bold uppercase tracking-wide text-ink-muted">
+          Tu mapa de sonidos
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {SOUNDS.map((s) => {
+            const st = map[s.id];
+            const color =
+              st === "correct"
+                ? "bg-success"
+                : st === "improve"
+                  ? "bg-warning"
+                  : "bg-surface3";
+            return (
+              <span
+                key={s.id}
+                className="inline-flex items-center gap-1.5 rounded-full border border-line px-2 py-1 text-xs text-ink"
+              >
+                <span className={"h-2 w-2 rounded-full " + color} />
+                {s.label}
+              </span>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Sonidos */}
       <div className="mt-5 flex flex-wrap gap-2">
