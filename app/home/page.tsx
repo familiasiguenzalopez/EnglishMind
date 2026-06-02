@@ -34,10 +34,17 @@ export default async function HomeDashboard() {
       <XpStreak />
 
       <Link
-        href="/sesion"
+        href="/escenarios"
         className="mt-6 block rounded-lg bg-primary px-5 py-3 text-center text-sm font-bold text-white transition hover:bg-primary-dim"
       >
-        Practicar con tu tutor →
+        🎬 Practicar en escenarios →
+      </Link>
+
+      <Link
+        href="/sesion"
+        className="mt-3 block rounded-lg border border-line bg-surface px-5 py-3 text-center text-sm font-semibold text-ink-bright transition hover:border-primary"
+      >
+        💬 Charla libre con tu tutor →
       </Link>
 
       <Link

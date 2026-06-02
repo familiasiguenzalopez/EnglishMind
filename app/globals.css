@@ -90,3 +90,60 @@ h3 {
     transform: none;
   }
 }
+
+/* ───────────────────────────────────────────────────────────
+   Personaje 2D + escenas (animaciones)
+   ─────────────────────────────────────────────────────────── */
+@keyframes em-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.1); }
+}
+@keyframes em-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+@keyframes em-talk {
+  from { transform: scaleY(0.32); }
+  to { transform: scaleY(1); }
+}
+@keyframes em-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes em-ripple {
+  0% { transform: scale(0.62); opacity: 0.5; }
+  100% { transform: scale(1.85); opacity: 0; }
+}
+
+.em-eye {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: em-blink 4.5s infinite;
+}
+.em-bob {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: em-bob 3.6s ease-in-out infinite;
+}
+.em-mouth-talk {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: em-talk 0.26s ease-in-out infinite alternate;
+}
+.em-float {
+  animation: em-float 7s ease-in-out infinite;
+}
+.em-ripple {
+  transform-origin: center;
+  animation: em-ripple 1.6s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .em-eye,
+  .em-bob,
+  .em-mouth-talk,
+  .em-float,
+  .em-ripple {
+    animation: none !important;
+  }
+}

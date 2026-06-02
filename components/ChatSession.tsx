@@ -7,6 +7,10 @@ import { RehearsalToggle } from "@/components/ui/RehearsalToggle";
 import { cn } from "@/lib/cn";
 import { award } from "@/lib/gamify";
 import { loadTutorPrefs, saveTutorPrefs, type TutorPrefs } from "@/lib/tutorPrefs";
+import { SceneStage } from "@/components/scene/SceneStage";
+import { type CharState } from "@/components/scene/SceneCharacter";
+import { loadLook, type AvatarLook } from "@/lib/avatar";
+import { getScene, type Scene } from "@/lib/scenes";
 
 // Conversación v2 (estilo Speak): personaje que habla (avatar animado + TTS),
 // micrófono para hablar (Web Speech), respuestas sugeridas y debrief al cerrar.
@@ -17,19 +21,20 @@ const LEVELS = ["A1", "A2", "B1", "B2"] as const;
 type Level = (typeof LEVELS)[number];
 
 export function ChatSession({
+  scene: sceneProp,
   scenario,
   starter,
   goal,
   lessonId,
 }: {
+  scene?: Scene;
   scenario?: string;
   starter?: string;
   goal?: string;
   lessonId?: string;
 }) {
   const isRoleplay = !!scenario;
-  const charEmoji = isRoleplay ? "🧑‍💼" : "🗣️";
-  const charName = isRoleplay ? "Cliente" : "Tu tutor";
+  const scene = sceneProp ?? getScene("tutor")!;
 
   const [messages, setMessages] = useState<Msg[]>([
     {
@@ -55,6 +60,7 @@ export function ChatSession({
   const [debrief, setDebrief] = useState<Debrief | null>(null);
   const [finishing, setFinishing] = useState(false);
   const [prefs, setPrefs] = useState<TutorPrefs | null>(null);
+  const [look, setLook] = useState<AvatarLook | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -65,6 +71,7 @@ export function ChatSession({
       setPrefs(p);
       setMuted(!p.autoplay);
     });
+    setLook(loadLook());
     return () => clearInterval(t);
   }, []);
 
@@ -73,6 +80,13 @@ export function ChatSession({
   }, [messages, loading]);
 
   const mmss = `${String(Math.floor(secs / 60)).padStart(2, "0")}:${String(secs % 60).padStart(2, "0")}`;
+  const charState: CharState = speaking
+    ? "speaking"
+    : recognizing
+      ? "listening"
+      : loading
+        ? "thinking"
+        : "idle";
 
   function pickVoice(accent: string): SpeechSynthesisVoice | undefined {
     if (typeof window === "undefined" || !window.speechSynthesis) return undefined;
@@ -241,20 +255,9 @@ export function ChatSession({
         </div>
       </header>
 
-      {/* Personaje que habla */}
-      <div className="flex flex-col items-center pt-2">
-        <div
-          className={cn(
-            "grid h-20 w-20 place-items-center rounded-full bg-surface3 text-4xl transition",
-            speaking ? "ring-4 ring-secondary" : recognizing ? "ring-4 ring-primary" : "ring-1 ring-line",
-          )}
-        >
-          <span className={speaking ? "animate-pulse" : ""}>{charEmoji}</span>
-        </div>
-        <div className="mt-1 text-sm font-semibold text-ink-bright">{charName}</div>
-        <div className="h-4 text-[11px] text-secondary">
-          {speaking ? "hablando…" : recognizing ? "escuchando…" : loading ? "pensando…" : ""}
-        </div>
+      {/* Escenario: fondo ambientado + personaje 2D animado */}
+      <div className="pt-2">
+        <SceneStage scene={scene} state={charState} look={look ?? undefined} />
       </div>
 
       {goal && (
@@ -365,7 +368,7 @@ export function ChatSession({
         >
           {loadingSug ? "Pensando…" : "💬 ¿Qué digo?"}
         </button>
-        {lessonId && (
+        {(lessonId || scenario) && (
           <button
             type="button"
             onClick={finish}
