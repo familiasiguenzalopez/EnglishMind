@@ -90,6 +90,13 @@ export default async function HomeDashboard() {
         ⚙️ Panel de administrador
       </Link>
 
+      <Link
+        href="/org"
+        className="mt-1 block text-center text-xs text-ink-dim transition hover:text-ink"
+      >
+        🏫 Colegios y empresas
+      </Link>
+
       <h1 className="mt-8 font-display text-2xl font-extrabold text-ink-bright">
         Tu plan de hoy
       </h1>
