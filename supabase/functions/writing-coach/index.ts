@@ -32,11 +32,9 @@ Deno.serve(async (req: Request) => {
   if (!text || !String(text).trim()) return json({ error: "Falta 'text'" }, 400);
 
   try {
-    const r = await runChat(
-      "escritura",
-      systemPrompt(level, genre),
-      `Texto del estudiante:\n${text}`,
-    );
+    const r = await runChat("escritura", systemPrompt(level, genre), [
+      { role: "user" as const, content: `Texto del estudiante:\n${text}` },
+    ]);
     return json({
       feedback: r.reply,
       provider: r.provider,

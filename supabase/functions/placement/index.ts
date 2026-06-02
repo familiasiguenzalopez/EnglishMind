@@ -46,7 +46,9 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const r = await runChat("cerebro", SYSTEM, `Muestra del estudiante:\n${sample}`);
+    const r = await runChat("cerebro", SYSTEM, [
+      { role: "user" as const, content: `Muestra del estudiante:\n${sample}` },
+    ]);
     const parsed = parseResult(r.reply);
     return json({ ...parsed, provider: r.provider, model: r.model, tier: r.tier });
   } catch (e) {

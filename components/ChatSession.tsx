@@ -60,9 +60,17 @@ export function ChatSession({
     setError(null);
     setLoading(true);
     try {
+      // Historial para que el tutor recuerde (el saludo inicial va como 'starter').
+      const history = messages
+        .slice(1)
+        .map((m) => ({
+          role: m.role === "tutor" ? ("assistant" as const) : ("user" as const),
+          content: m.text,
+        }));
+      while (history.length && history[history.length - 1].role === "user") history.pop();
       const supabase = createClient();
       const { data, error } = await supabase.functions.invoke("tutor-brain", {
-        body: { message: text, level, scenario },
+        body: { message: text, level, scenario, starter, history },
       });
       if (error) throw error;
       if (!data?.reply) throw new Error(data?.error ?? "sin respuesta");

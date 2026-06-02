@@ -1,10 +1,8 @@
 // ════════════════════════════════════════════════════════════
-// Orquestador compartido para las Edge Functions de texto.
-// Lee orchestrator_config (con la SERVICE ROLE key → bypassa RLS) para la
-// funcionalidad pedida, arma la cadena (nivel ACTIVO primero, luego el resto
-// como fallback) y llama al proveedor configurado. Si no hay config, usa un
-// fallback por defecto. Normaliza proveedor/modelo: soporta valores canónicos
-// (claude-*, gemini-*) o descriptivos del seed.
+// Orquestador compartido (multi-turno). Lee orchestrator_config (service role
+// → bypassa RLS) para la funcionalidad, arma la cadena (nivel activo primero +
+// fallback) y llama al proveedor/modelo configurado con el HISTORIAL de la
+// conversación. Normaliza proveedor/modelo (claude-*/gemini-* o descriptivo).
 // ════════════════════════════════════════════════════════════
 
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -23,6 +21,7 @@ export function json(body: unknown, status = 200): Response {
   });
 }
 
+export type ChatMsg = { role: "user" | "assistant"; content: string };
 type Step = { provider: string; model: string; tier: number };
 
 const DEFAULT_CHAIN: Step[] = [
@@ -35,7 +34,7 @@ function normProvider(provider: string, model: string): string {
   const m = (model || "").toLowerCase();
   if (m.startsWith("claude") || p.includes("anthropic") || p.includes("claude")) return "anthropic";
   if (m.startsWith("gemini") || p.includes("google") || p.includes("gemini")) return "google";
-  return ""; // proveedor no soportado por una función de texto
+  return "";
 }
 
 function normModel(provider: string, model: string): string {
@@ -69,13 +68,13 @@ async function getChain(feature: string): Promise<Step[]> {
         if (steps.length) return steps;
       }
     } catch {
-      /* usa el fallback */
+      /* fallback */
     }
   }
   return DEFAULT_CHAIN;
 }
 
-async function callClaude(model: string, system: string, user: string): Promise<string> {
+async function callClaude(model: string, system: string, messages: ChatMsg[]): Promise<string> {
   const key = Deno.env.get("ANTHROPIC_API_KEY");
   if (!key) throw new Error("sin ANTHROPIC_API_KEY");
   const anthropic = new Anthropic({ apiKey: key });
@@ -83,7 +82,7 @@ async function callClaude(model: string, system: string, user: string): Promise<
     model,
     max_tokens: 500,
     system,
-    messages: [{ role: "user", content: user }],
+    messages: messages.map((m) => ({ role: m.role, content: m.content })),
   });
   const t = res.content
     .filter((c) => c.type === "text")
@@ -93,7 +92,7 @@ async function callClaude(model: string, system: string, user: string): Promise<
   return t;
 }
 
-async function callGemini(model: string, system: string, user: string): Promise<string> {
+async function callGemini(model: string, system: string, messages: ChatMsg[]): Promise<string> {
   const key = Deno.env.get("GEMINI_API_KEY");
   if (!key) throw new Error("sin GEMINI_API_KEY");
   const url =
@@ -102,7 +101,11 @@ async function callGemini(model: string, system: string, user: string): Promise<
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: system + "\n\n" + user }] }],
+      systemInstruction: { parts: [{ text: system }] },
+      contents: messages.map((m) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      })),
       generationConfig: { maxOutputTokens: 500 },
     }),
   });
@@ -123,16 +126,20 @@ export type ChatResult = {
   fellBack: boolean;
 };
 
-// Corre la cadena del orquestador para `feature`. Lanza si todos fallan.
-export async function runChat(feature: string, system: string, user: string): Promise<ChatResult> {
+// Corre la cadena del orquestador con el historial. Lanza si todos fallan.
+export async function runChat(
+  feature: string,
+  system: string,
+  messages: ChatMsg[],
+): Promise<ChatResult> {
   const chain = await getChain(feature);
   const errors: string[] = [];
   for (const step of chain) {
     try {
       const reply =
         step.provider === "anthropic"
-          ? await callClaude(step.model, system, user)
-          : await callGemini(step.model, system, user);
+          ? await callClaude(step.model, system, messages)
+          : await callGemini(step.model, system, messages);
       return { reply, provider: step.provider, model: step.model, tier: step.tier, fellBack: errors.length > 0 };
     } catch (e) {
       errors.push(`${step.provider}/${step.model}: ${String(e)}`);
