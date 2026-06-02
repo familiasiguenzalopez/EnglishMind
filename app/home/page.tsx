@@ -69,6 +69,13 @@ export default async function HomeDashboard() {
         🎙️ Tu progreso, en tu propia voz →
       </Link>
 
+      <Link
+        href="/certificado"
+        className="mt-3 block rounded-lg border border-line bg-surface px-5 py-3 text-center text-sm font-semibold text-ink transition hover:border-primary"
+      >
+        🎓 Mi certificado CEFR →
+      </Link>
+
       <h1 className="mt-8 font-display text-2xl font-extrabold text-ink-bright">
         Tu plan de hoy
       </h1>
