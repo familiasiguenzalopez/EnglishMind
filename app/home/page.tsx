@@ -83,6 +83,13 @@ export default async function HomeDashboard() {
         🔁 Repaso de hoy →
       </Link>
 
+      <Link
+        href="/admin"
+        className="mt-3 block text-center text-xs text-ink-dim transition hover:text-ink"
+      >
+        ⚙️ Panel de administrador
+      </Link>
+
       <h1 className="mt-8 font-display text-2xl font-extrabold text-ink-bright">
         Tu plan de hoy
       </h1>
