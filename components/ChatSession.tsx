@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { RehearsalToggle } from "@/components/ui/RehearsalToggle";
 import { cn } from "@/lib/cn";
 import { award } from "@/lib/gamify";
+import { loadTutorPrefs, saveTutorPrefs, type TutorPrefs } from "@/lib/tutorPrefs";
 
 // Conversación v2 (estilo Speak): personaje que habla (avatar animado + TTS),
 // micrófono para hablar (Web Speech), respuestas sugeridas y debrief al cerrar.
@@ -53,12 +54,17 @@ export function ChatSession({
   const [loadingSug, setLoadingSug] = useState(false);
   const [debrief, setDebrief] = useState<Debrief | null>(null);
   const [finishing, setFinishing] = useState(false);
+  const [prefs, setPrefs] = useState<TutorPrefs | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const t = setInterval(() => setSecs((s) => s + 1), 1000);
     const w = window as unknown as Record<string, unknown>;
     setSttSupported(Boolean(w.SpeechRecognition || w.webkitSpeechRecognition));
+    loadTutorPrefs().then((p) => {
+      setPrefs(p);
+      setMuted(!p.autoplay);
+    });
     return () => clearInterval(t);
   }, []);
 
@@ -68,12 +74,20 @@ export function ChatSession({
 
   const mmss = `${String(Math.floor(secs / 60)).padStart(2, "0")}:${String(secs % 60).padStart(2, "0")}`;
 
-  function speak(text: string) {
-    if (muted || typeof window === "undefined" || !window.speechSynthesis) return;
+  function pickVoice(accent: string): SpeechSynthesisVoice | undefined {
+    if (typeof window === "undefined" || !window.speechSynthesis) return undefined;
+    const vs = window.speechSynthesis.getVoices();
+    return vs.find((v) => v.lang === accent) || vs.find((v) => v.lang.startsWith(accent.slice(0, 2)));
+  }
+  function speak(text: string, force = false) {
+    if ((!force && muted) || typeof window === "undefined" || !window.speechSynthesis) return;
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text.split("💡")[0].trim());
-      u.lang = "en-US";
+      const accent = prefs?.accent ?? "en-US";
+      const v = pickVoice(accent);
+      if (v) u.voice = v;
+      u.lang = accent;
       u.rate = 1;
       u.onstart = () => setSpeaking(true);
       u.onend = () => setSpeaking(false);
@@ -99,7 +113,7 @@ export function ChatSession({
     try {
       const supabase = createClient();
       const { data, error } = await supabase.functions.invoke("tutor-brain", {
-        body: { message: text, level, scenario, starter, history: buildHistory() },
+        body: { message: text, level, scenario, starter, tone: prefs?.tone, history: buildHistory() },
       });
       if (error) throw error;
       if (!data?.reply) throw new Error(data?.error ?? "sin respuesta");
@@ -200,8 +214,14 @@ export function ChatSession({
           <button
             type="button"
             onClick={() => {
-              if (!muted && typeof window !== "undefined") window.speechSynthesis?.cancel();
-              setMuted((v) => !v);
+              const willMute = !muted;
+              if (willMute && typeof window !== "undefined") window.speechSynthesis?.cancel();
+              setMuted(willMute);
+              void saveTutorPrefs({
+                accent: prefs?.accent ?? "en-US",
+                tone: prefs?.tone ?? "Cercano",
+                autoplay: !willMute,
+              });
             }}
             title="Voz del tutor"
           >
@@ -263,7 +283,7 @@ export function ChatSession({
             {m.role === "tutor" && (
               <button
                 type="button"
-                onClick={() => speak(m.text)}
+                onClick={() => speak(m.text, true)}
                 className="mt-1 text-[10px] text-ink-dim hover:text-ink"
               >
                 🔊 escuchar

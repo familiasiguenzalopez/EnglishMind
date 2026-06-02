@@ -1,6 +1,7 @@
 import { anonClient } from "@/lib/supabase/anon";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { TutorPicker } from "@/components/TutorPicker";
+import { TutorPrefs } from "@/components/TutorPrefs";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,8 @@ export default async function Tutores({
       <div className="mt-7">
         <TutorPicker tutors={tutors} initialActiveId={activeId} />
       </div>
+
+      <TutorPrefs />
     </main>
   );
 }

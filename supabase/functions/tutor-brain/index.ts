@@ -6,9 +6,10 @@
 
 import { CORS, json, runChat, type ChatMsg } from "../_shared/orchestrator.ts";
 
-function systemPrompt(level: string, scenario?: string, starter?: string): string {
+function systemPrompt(level: string, scenario?: string, starter?: string, tone?: string): string {
   const base =
     `Eres un tutor de inglés cálido para un estudiante LATAM (nivel ${level}). ` +
+    (tone ? `Tu tono es ${tone.toLowerCase()}. ` : "") +
     `El error nunca avergüenza: corrige con un recast suave. Celebra el esfuerzo.`;
   if (scenario && scenario.trim()) {
     let s =
@@ -53,7 +54,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "Method Not Allowed" }, 405);
 
-  const { message, level = "B1", scenario, starter, history } = await req
+  const { message, level = "B1", scenario, starter, tone, history } = await req
     .json()
     .catch(() => ({}));
   if (!message) return json({ error: "Falta 'message'" }, 400);
@@ -64,7 +65,7 @@ Deno.serve(async (req: Request) => {
   ];
 
   try {
-    const r = await runChat("cerebro", systemPrompt(level, scenario, starter), messages);
+    const r = await runChat("cerebro", systemPrompt(level, scenario, starter, tone), messages);
     return json({
       reply: r.reply,
       provider: r.provider,
