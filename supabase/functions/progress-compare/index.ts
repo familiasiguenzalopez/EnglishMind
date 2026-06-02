@@ -44,7 +44,7 @@ Deno.serve(async (req: Request) => {
         ],
       },
     ],
-    generationConfig: { maxOutputTokens: 300 },
+    generationConfig: { maxOutputTokens: 512, thinkingConfig: { thinkingBudget: 0 } },
   };
 
   let r: Response;

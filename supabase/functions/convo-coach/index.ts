@@ -72,7 +72,7 @@ Deno.serve(async (req: Request) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ role: "user", parts: [{ text: prompt(mode, scenario, goal, level, transcript(history)) }] }],
-      generationConfig: { maxOutputTokens: 400, responseMimeType: "application/json" },
+      generationConfig: { maxOutputTokens: 512, thinkingConfig: { thinkingBudget: 0 } },
     }),
   });
   if (!r.ok) return json({ error: `Gemini HTTP ${r.status}: ${await r.text()}` }, 502);

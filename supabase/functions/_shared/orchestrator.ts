@@ -106,7 +106,7 @@ async function callGemini(model: string, system: string, messages: ChatMsg[]): P
         role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }],
       })),
-      generationConfig: { maxOutputTokens: 500 },
+      generationConfig: { maxOutputTokens: 600, thinkingConfig: { thinkingBudget: 0 } },
     }),
   });
   if (!r.ok) throw new Error(`Gemini HTTP ${r.status}: ${await r.text()}`);
