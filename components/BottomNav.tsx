@@ -4,11 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 
+// Loop pedagógico (como las apps punteras): Aprender (camino) → Practicar
+// (escenarios) → Repasar (espaciado) → Progreso. Inicio es el hub. Las
+// destrezas sueltas (Pronunciar/Escribir) viven dentro de "Practica" en Home.
 const TABS = [
   { href: "/home", label: "Inicio", icon: "🏠" },
+  { href: "/aprender", label: "Aprender", icon: "🛤️" },
   { href: "/escenarios", label: "Practicar", icon: "🎬" },
-  { href: "/pronunciacion", label: "Pronunciar", icon: "🗣️" },
-  { href: "/escritura", label: "Escribir", icon: "✍️" },
+  { href: "/repaso", label: "Repasar", icon: "🔁" },
+  { href: "/progreso", label: "Progreso", icon: "📊" },
 ];
 
 // Pantallas a pantalla completa o fuera del shell: sin barra.
