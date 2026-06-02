@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { PronunciationScore, type PronStatus } from "@/components/ui/PronunciationScore";
 import { award } from "@/lib/gamify";
 import { loadSoundMap, recordSound } from "@/lib/soundmap";
+import { AzurePronunciation } from "@/components/AzurePronunciation";
 
 // Práctica de pronunciación con pares mínimos (prioridad para hispanohablantes).
 // v1 credential-free: speechSynthesis = modelo nativo; SpeechRecognition =
@@ -154,6 +155,10 @@ export default function Pronunciacion() {
         La meta es que te entiendan, no sonar gringo. Escucha el modelo y repítelo;
         te digo si sonó claro.
       </p>
+
+      <div className="mt-5">
+        <AzurePronunciation />
+      </div>
 
       {/* Mapa de sonidos (tu progreso, persistente) */}
       <div className="mt-5 rounded-lg border border-line bg-surface2 p-3">
