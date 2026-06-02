@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { award } from "@/lib/gamify";
+import { createClient } from "@/lib/supabase/client";
+import { blobToWav16k, bytesToBase64 } from "@/lib/wav";
 
-// "Tu progreso, en tu propia voz" (Lote 1 · #6) — shell credential-free.
+// "Tu progreso, en tu propia voz" (Lote 1 · #6).
 // Graba con MediaRecorder y guarda EN EL DISPOSITIVO (localStorage), opt-in.
-// Nada se sube ni entrena modelos. La comparación es contra tu yo anterior,
-// nunca contra otros. El "entonces vs ahora" real con scoring llega después.
+// "Comparar con IA": convierte antes/ahora a WAV y los manda a Gemini para
+// describir el avance (solo en ese momento; no se almacena).
 
 const PROMPT = "Tell me about your job — háblame de tu trabajo (30 seg).";
 const KEY = "em_capsules_v1";
@@ -39,6 +41,8 @@ export default function Progreso() {
   const [recording, setRecording] = useState(false);
   const [supported, setSupported] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [comparing, setComparing] = useState(false);
   const recRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
@@ -79,7 +83,9 @@ export default function Progreso() {
         const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
         const dataUrl = await blobToDataUrl(blob);
         const cap: Capsule = { id: crypto.randomUUID(), ts: Date.now(), dataUrl };
-        persist([...capsules, cap].sort((a, b) => a.ts - b.ts));
+        const next = [...capsules, cap].sort((a, b) => a.ts - b.ts);
+        persist(next);
+        setAnalysis(null);
         award(
           20,
           capsules.length === 0
@@ -106,6 +112,33 @@ export default function Progreso() {
     persist(capsules.filter((c) => c.id !== id));
   }
 
+  async function compare(oldCap: Capsule, newCap: Capsule) {
+    setComparing(true);
+    setAnalysis(null);
+    try {
+      const toWavB64 = async (dataUrl: string) => {
+        const blob = await (await fetch(dataUrl)).blob();
+        const wav = await blobToWav16k(blob);
+        return bytesToBase64(new Uint8Array(await wav.arrayBuffer()));
+      };
+      const [audioOld, audioNew] = await Promise.all([
+        toWavB64(oldCap.dataUrl),
+        toWavB64(newCap.dataUrl),
+      ]);
+      const supabase = createClient();
+      const { data, error } = await supabase.functions.invoke("progress-compare", {
+        body: { audioOld, audioNew },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAnalysis((data.analysis as string) ?? "");
+    } catch {
+      setAnalysis("No pudimos comparar ahora. Intenta de nuevo en un momento.");
+    } finally {
+      setComparing(false);
+    }
+  }
+
   const sorted = [...capsules].sort((a, b) => a.ts - b.ts);
   const entonces = sorted[0];
   const ahora = sorted.length > 1 ? sorted[sorted.length - 1] : undefined;
@@ -126,31 +159,25 @@ export default function Progreso() {
           Tu frase de referencia
         </div>
         <p className="mt-1 text-lg text-ink-bright">{PROMPT}</p>
-
         <button
           type="button"
           onClick={recording ? stop : start}
           disabled={!supported}
           className={
             "mt-4 inline-flex items-center gap-2 rounded-md px-5 py-3 text-sm font-bold transition disabled:opacity-40 " +
-            (recording
-              ? "bg-danger text-white"
-              : "bg-primary text-white hover:bg-primary-dim")
+            (recording ? "bg-danger text-white" : "bg-primary text-white hover:bg-primary-dim")
           }
         >
           <span
             className={
-              "h-2.5 w-2.5 rounded-full " +
-              (recording ? "animate-pulse bg-white" : "bg-white/80")
+              "h-2.5 w-2.5 rounded-full " + (recording ? "animate-pulse bg-white" : "bg-white/80")
             }
           />
           {recording ? "Detener" : "🎙️ Grabar mi voz"}
         </button>
-
         {!supported && (
           <p className="mt-3 text-sm text-warning">
-            Tu navegador no soporta grabación. Funciona en Chrome (móvil o
-            escritorio).
+            Tu navegador no soporta grabación. Funciona en Chrome (móvil o escritorio).
           </p>
         )}
         {error && <p className="mt-3 text-sm text-warning">{error}</p>}
@@ -163,27 +190,39 @@ export default function Progreso() {
             Entonces vs. ahora
           </h2>
           {ahora ? (
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {[
-                { label: "Entonces", cap: entonces },
-                { label: "Ahora", cap: ahora },
-              ].map(({ label, cap }) => (
-                <div
-                  key={cap.id}
-                  className="rounded-lg border border-line bg-surface2 p-4"
-                >
-                  <div className="text-xs font-bold uppercase tracking-wide text-secondary">
-                    {label}
+            <>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {[
+                  { label: "Entonces", cap: entonces },
+                  { label: "Ahora", cap: ahora },
+                ].map(({ label, cap }) => (
+                  <div key={cap.id} className="rounded-lg border border-line bg-surface2 p-4">
+                    <div className="text-xs font-bold uppercase tracking-wide text-secondary">
+                      {label}
+                    </div>
+                    <div className="text-xs text-ink-muted">{fmt(cap.ts)}</div>
+                    <audio controls src={cap.dataUrl} className="mt-2 w-full" />
                   </div>
-                  <div className="text-xs text-ink-muted">{fmt(cap.ts)}</div>
-                  <audio controls src={cap.dataUrl} className="mt-2 w-full" />
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => compare(entonces, ahora)}
+                disabled={comparing}
+                className="mt-3 rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-white transition hover:bg-primary-dim disabled:opacity-40"
+              >
+                {comparing ? "Comparando…" : "✨ Comparar con IA"}
+              </button>
+              {analysis && (
+                <div className="mt-3 rounded-lg border border-secondary bg-surface2 p-4 text-sm text-ink">
+                  {analysis}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           ) : (
             <p className="mt-2 text-sm text-ink-muted">
-              Esta es tu primera cápsula. Graba otra más adelante y aquí verás
-              cuánto avanzaste. 💪
+              Esta es tu primera cápsula. Graba otra más adelante y aquí verás cuánto
+              avanzaste. 💪
             </p>
           )}
         </div>
@@ -221,10 +260,12 @@ export default function Progreso() {
       {/* Privacidad por diseño */}
       <div className="mt-8 rounded-lg border border-line bg-surface2 p-4 text-xs leading-relaxed text-ink-dim">
         <strong className="text-ink-muted">Privacidad por diseño.</strong> Tus
-        grabaciones se guardan <strong>solo en este dispositivo</strong> (no se
-        suben, no se comparten, no entrenan modelos). Puedes borrarlas cuando
-        quieras. La comparación es siempre contra tu yo anterior — nunca contra
-        otros, y nunca para burlarse del pasado.
+        grabaciones se guardan <strong>solo en este dispositivo</strong> y puedes
+        borrarlas cuando quieras. Si pulsas <strong>“Comparar con IA”</strong>, esas
+        dos grabaciones se envían al modelo <strong>solo en ese momento</strong> para
+        describir tu avance; no se almacenan ni se usan para nada más. La comparación
+        es siempre contra tu yo anterior — nunca contra otros, ni para burlarse del
+        pasado.
       </div>
     </main>
   );
