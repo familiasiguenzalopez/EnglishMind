@@ -15,11 +15,26 @@ function systemPrompt(level: string, genre: string): string {
     `y el porqué en una línea. 3) NUNCA reescribas todo el texto por el estudiante. ` +
     `Atiende errores típicos del español: false friends (actually, assist, realize, ` +
     `embarrassed), sujeto omitido, orden de adjetivos, doble negación, preposiciones ` +
-    `por calco (depend of, think in), incontables, make/do, y mayúsculas (días, meses, ` +
-    `idiomas, nacionalidades). Explica el contraste con el español cuando ayude. ` +
-    `Escribe el feedback en español; los ejemplos van en inglés. Sé breve y alentador. ` +
-    `Formato exacto:\nFortaleza: ...\nOjo con esto: ...\nCómo se diría: ...`
+    `por calco (depend of, think in), incontables, make/do, y mayúsculas. ` +
+    `El feedback va en español; los ejemplos en inglés. Sé breve y alentador. ` +
+    `Clasifica el punto a mejorar en UNA categoria fija: verb-tense, subject-verb, ` +
+    `verb-form, articles, prepositions, plurals, word-order, word-choice, spelling, ` +
+    `punctuation, politeness, naturalness, fluency, other. ` +
+    `Responde SOLO JSON: {"feedback":"Fortaleza: ...\\nOjo con esto: ...\\nCómo se diría: ...","focus":[{"category":"<categoria>","note":"<que mejorar, breve>"}]}. ` +
+    `Si el texto esta perfecto para su nivel, deja focus:[].`
   );
+}
+
+function parseJson(text: string): Record<string, unknown> | null {
+  const m = text.match(/\{[\s\S]*\}/);
+  if (m) {
+    try {
+      return JSON.parse(m[0]);
+    } catch {
+      /* */
+    }
+  }
+  return null;
 }
 
 Deno.serve(async (req: Request) => {
@@ -35,8 +50,21 @@ Deno.serve(async (req: Request) => {
     const r = await runChat("escritura", systemPrompt(level, genre), [
       { role: "user" as const, content: `Texto del estudiante:\n${text}` },
     ]);
+    const parsed = parseJson(r.reply);
+    const feedback =
+      parsed && typeof parsed.feedback === "string" && parsed.feedback.trim()
+        ? parsed.feedback
+        : r.reply;
+    const focus =
+      parsed && Array.isArray(parsed.focus)
+        ? (parsed.focus as Array<{ category?: unknown; note?: unknown }>)
+            .filter((f) => f && typeof f.category === "string")
+            .slice(0, 2)
+            .map((f) => ({ category: String(f.category), note: String(f.note ?? "") }))
+        : [];
     return json({
-      feedback: r.reply,
+      feedback,
+      focus,
       provider: r.provider,
       model: r.model,
       tier: r.tier,

@@ -11,12 +11,20 @@ import { SceneStage } from "@/components/scene/SceneStage";
 import { type CharState } from "@/components/scene/SceneCharacter";
 import { loadLook, type AvatarLook } from "@/lib/avatar";
 import { getScene, type Scene } from "@/lib/scenes";
+import { recordSession, type Insight } from "@/lib/learnlog";
+import { skillLabel } from "@/lib/skills";
 
 // Conversación v2 (estilo Speak): personaje que habla (avatar animado + TTS),
 // micrófono para hablar (Web Speech), respuestas sugeridas y debrief al cerrar.
 
 type Msg = { role: "user" | "tutor"; text: string; meta?: string };
-type Debrief = { wins: string; improve: string; phrases: string[]; canDo: string };
+type Debrief = {
+  wins: string;
+  improve: string;
+  phrases: string[];
+  canDo: string;
+  focus?: { category: string; note: string }[];
+};
 const LEVELS = ["A1", "A2", "B1", "B2"] as const;
 type Level = (typeof LEVELS)[number];
 
@@ -59,6 +67,7 @@ export function ChatSession({
   const [loadingSug, setLoadingSug] = useState(false);
   const [debrief, setDebrief] = useState<Debrief | null>(null);
   const [finishing, setFinishing] = useState(false);
+  const [improved, setImproved] = useState<Insight[]>([]);
   const [prefs, setPrefs] = useState<TutorPrefs | null>(null);
   const [look, setLook] = useState<AvatarLook | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -196,6 +205,14 @@ export function ChatSession({
         body: { mode: "debrief", scenario, goal, level, history: buildHistory() },
       });
       setDebrief(data as Debrief);
+      const rec = await recordSession(
+        "conversation",
+        lessonId ?? null,
+        level,
+        (data as Debrief)?.focus ?? [],
+      );
+      setImproved(rec.improved);
+      if (rec.improved.length) await award(10);
       try {
         const {
           data: { user },
@@ -388,6 +405,17 @@ export function ChatSession({
             <h3 className="mt-1 text-center font-display text-xl font-extrabold text-ink-bright">
               ¡Buena práctica!
             </h3>
+            {improved.length > 0 && (
+              <div className="mt-3 rounded-md border border-secondary bg-surface2 p-3 text-center">
+                <div className="text-sm font-bold text-secondary">📈 ¡Vas mejorando!</div>
+                {improved.map((x) => (
+                  <p key={x.category} className="text-xs text-ink">
+                    Llevas {x.streak} prácticas sin repetir{" "}
+                    <span className="font-semibold text-ink-bright">{x.label}</span>.
+                  </p>
+                ))}
+              </div>
+            )}
             <div className="mt-4 space-y-3 text-sm">
               <div>
                 <div className="text-[11px] font-bold uppercase tracking-wide text-secondary">Lo hiciste bien</div>
@@ -396,6 +424,18 @@ export function ChatSession({
               <div>
                 <div className="text-[11px] font-bold uppercase tracking-wide text-warning">Para pulir</div>
                 <p className="text-ink">{debrief.improve}</p>
+                {debrief.focus && debrief.focus.length > 0 && (
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {debrief.focus.map((f) => (
+                      <span
+                        key={f.category}
+                        className="rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-muted"
+                      >
+                        {skillLabel(f.category)}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               {debrief.phrases?.length > 0 && (
                 <div>

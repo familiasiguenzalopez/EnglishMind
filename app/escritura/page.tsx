@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { LessonBar } from "@/components/LessonBar";
+import { award } from "@/lib/gamify";
+import { recordSession, type Insight } from "@/lib/learnlog";
+import { skillLabel } from "@/lib/skills";
 
 // Feedback de escritura (NLP) — el alumno escribe, el coach resalta una
 // fortaleza y UN punto a mejorar (recast), nunca reescribe. Vía writing-coach.
@@ -25,6 +28,8 @@ export default function Escritura() {
   const [lessonId, setLessonId] = useState<string | null>(null);
   const [lessonGoal, setLessonGoal] = useState<string | null>(null);
   const [lessonPrompt, setLessonPrompt] = useState<string | null>(null);
+  const [focus, setFocus] = useState<{ category: string; note?: string }[]>([]);
+  const [improved, setImproved] = useState<Insight[]>([]);
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("leccion");
@@ -64,6 +69,11 @@ export default function Escritura() {
       if (error) throw error;
       if (!data?.feedback) throw new Error(data?.error ?? "sin feedback");
       setFeedback(data.feedback);
+      const f = Array.isArray(data.focus) ? data.focus : [];
+      setFocus(f);
+      const rec = await recordSession("writing", lessonId, level, f);
+      setImproved(rec.improved);
+      if (rec.improved.length) await award(10);
     } catch {
       setError("No pude revisar ahora. Probemos de nuevo en un momento.");
     } finally {
@@ -147,6 +157,18 @@ export default function Escritura() {
         </p>
       )}
 
+      {improved.length > 0 && (
+        <div className="mt-4 rounded-md border border-secondary bg-surface2 p-3">
+          <div className="text-sm font-bold text-secondary">📈 ¡Vas mejorando!</div>
+          {improved.map((x) => (
+            <p key={x.category} className="text-xs text-ink">
+              Llevas {x.streak} prácticas sin repetir{" "}
+              <span className="font-semibold text-ink-bright">{x.label}</span>.
+            </p>
+          ))}
+        </div>
+      )}
+
       {feedback && (
         <div className="mt-5 rounded-lg border border-line bg-surface p-4">
           <div className="mb-2 text-[11px] font-bold uppercase tracking-wide text-secondary">
@@ -155,6 +177,18 @@ export default function Escritura() {
           <p className="whitespace-pre-line text-sm leading-relaxed text-ink">
             {feedback}
           </p>
+          {focus.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {focus.map((f) => (
+                <span
+                  key={f.category}
+                  className="rounded-full border border-line px-2 py-0.5 text-[11px] text-ink-muted"
+                >
+                  {skillLabel(f.category)}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </main>

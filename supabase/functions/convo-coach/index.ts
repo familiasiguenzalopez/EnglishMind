@@ -34,7 +34,10 @@ function prompt(
     return (
       `Eres un tutor de inglés cálido para un estudiante LATAM. ${ctx}\n\n` +
       `Escribe un cierre MOTIVADOR en español. Celebra el esfuerzo; nunca avergüences. ` +
-      `Responde SOLO JSON: {"wins":"<1-2 frases de lo que hizo bien>","improve":"<UNA cosa a mejorar, con un ejemplo breve en inglés>","phrases":["<frase util en ingles que uso o podria usar>","<otra>"],"canDo":"<frase 'Ya puedes...' acorde al objetivo>"}`
+      `Ademas clasifica los errores principales en categorias fijas para seguir su progreso. ` +
+      `Categorias permitidas: verb-tense, subject-verb, verb-form, articles, prepositions, plurals, word-order, word-choice, spelling, punctuation, politeness, naturalness, pronunciation, fluency, other. ` +
+      `Responde SOLO JSON: {"wins":"<1-2 frases de lo que hizo bien>","improve":"<UNA cosa a mejorar, con un ejemplo breve en inglés>","phrases":["<frase util>","<otra>"],"canDo":"<frase 'Ya puedes...'>","focus":[{"category":"<una categoria>","note":"<que mejorar, muy breve>"}]}. ` +
+      `En focus pon 1 o 2 categorias REALMENTE observadas; si no hubo errores, focus:[].`
     );
   }
   return (
@@ -88,6 +91,15 @@ Deno.serve(async (req: Request) => {
       improve: String(parsed.improve ?? "Sigue practicando frases completas."),
       phrases: Array.isArray(parsed.phrases) ? parsed.phrases.slice(0, 4) : [],
       canDo: String(parsed.canDo ?? "Ya puedes sostener una práctica en inglés."),
+      focus: Array.isArray(parsed.focus)
+        ? parsed.focus
+            .filter((f: { category?: unknown }) => f && typeof f.category === "string")
+            .slice(0, 3)
+            .map((f: { category: string; note?: unknown }) => ({
+              category: String(f.category),
+              note: String(f.note ?? ""),
+            }))
+        : [],
     });
   }
   const s = Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, 3) : [];
