@@ -7,6 +7,7 @@ import { loadSoundMap, recordSound } from "@/lib/soundmap";
 import { AzurePronunciation } from "@/components/AzurePronunciation";
 import { LessonBar } from "@/components/LessonBar";
 import { createClient } from "@/lib/supabase/client";
+import { recordSession, type Insight } from "@/lib/learnlog";
 
 // Práctica de pronunciación con pares mínimos (prioridad para hispanohablantes).
 // v1 credential-free: speechSynthesis = modelo nativo; SpeechRecognition =
@@ -74,6 +75,7 @@ export default function Pronunciacion() {
   const [lessonId, setLessonId] = useState<string | null>(null);
   const [lessonGoal, setLessonGoal] = useState<string | null>(null);
   const [lessonRef, setLessonRef] = useState<string | null>(null);
+  const [improved, setImproved] = useState<Insight[]>([]);
 
   useEffect(() => {
     const w = window as unknown as Record<string, unknown>;
@@ -94,6 +96,14 @@ export default function Pronunciacion() {
         });
     }
   }, []);
+
+  // Registra la práctica en el hilo de aprendizaje (focos por sonido).
+  function logPron(focus: { category: string; note?: string }[]) {
+    void recordSession("pronunciation", lessonId, "A2", focus).then((r) => {
+      setImproved(r.improved);
+      if (r.improved.length) void award(10);
+    });
+  }
 
   function pick(sound: Sound, word: string, partner: string) {
     setSound(sound);
@@ -143,6 +153,16 @@ export default function Pronunciacion() {
         heard = alts[0] ?? "";
       }
       setResult({ kind, heard });
+      logPron(
+        kind === "correct"
+          ? []
+          : [
+              {
+                category: `pron-${sound.id}`,
+                note: kind === "improve" ? `Sonó como "${heard}"` : "No se entendió",
+              },
+            ],
+      );
       void recordSound(sound.id, kind, scoreValue[kind]);
       setMap((prev) => {
         const rank: Record<PronStatus, number> = { correct: 3, improve: 2, unintelligible: 1 };
@@ -178,8 +198,34 @@ export default function Pronunciacion() {
       <LessonBar lessonId={lessonId} goal={lessonGoal} />
 
       <div className="mt-5">
-        <AzurePronunciation lessonSentence={lessonRef ?? undefined} />
+        <AzurePronunciation
+          lessonSentence={lessonRef ?? undefined}
+          onScore={(score, worst) =>
+            logPron(
+              score >= 75
+                ? []
+                : [
+                    {
+                      category: "pronunciation",
+                      note: worst.length ? `Palabras a pulir: ${worst.join(", ")}` : "Sube la claridad general",
+                    },
+                  ],
+            )
+          }
+        />
       </div>
+
+      {improved.length > 0 && (
+        <div className="mt-3 rounded-md border border-secondary bg-surface2 p-3">
+          <div className="text-sm font-bold text-secondary">📈 ¡Vas mejorando!</div>
+          {improved.map((x) => (
+            <p key={x.category} className="text-xs text-ink">
+              Llevas {x.streak} prácticas sin repetir{" "}
+              <span className="font-semibold text-ink-bright">{x.label}</span>.
+            </p>
+          ))}
+        </div>
+      )}
 
       {/* Mapa de sonidos (tu progreso, persistente) */}
       <div className="mt-5 rounded-lg border border-line bg-surface2 p-3">

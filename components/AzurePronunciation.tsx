@@ -29,7 +29,13 @@ function tone(v: number | null) {
   return "text-danger";
 }
 
-export function AzurePronunciation({ lessonSentence }: { lessonSentence?: string } = {}) {
+export function AzurePronunciation({
+  lessonSentence,
+  onScore,
+}: {
+  lessonSentence?: string;
+  onScore?: (pron: number, worstWords: string[]) => void;
+} = {}) {
   const SENTS = lessonSentence ? [lessonSentence, ...SENTENCES] : SENTENCES;
   const [refIdx, setRefIdx] = useState(0);
   const [recording, setRecording] = useState(false);
@@ -75,6 +81,11 @@ export function AzurePronunciation({ lessonSentence }: { lessonSentence?: string
         if ((data?.pron ?? 0) >= 70) {
           award(15, { id: "azure-pron", label: "Pronunciación clara (score real)" });
         }
+        const worst = ((data?.words ?? []) as WordScore[])
+          .filter((w) => w.accuracy != null && w.accuracy < 60 && w.error !== "Omission")
+          .map((w) => w.word)
+          .slice(0, 4);
+        onScore?.(data?.pron ?? 0, worst);
       } catch {
         setError("No se pudo evaluar. Intenta de nuevo, hablando claro y cerca del micrófono.");
       } finally {

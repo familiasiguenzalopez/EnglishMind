@@ -14,6 +14,11 @@ export const SKILL_CATEGORIES: Record<string, string> = {
   politeness: "Cortesía / registro",
   naturalness: "Naturalidad",
   pronunciation: "Pronunciación",
+  "pron-i": "Sonido /ɪ/ vs /iː/ (ship/sheep)",
+  "pron-bv": "Sonido /b/ vs /v/",
+  "pron-th": "Sonido /θ/ (th)",
+  "pron-sh": "Sonido /ʃ/ vs /tʃ/",
+  "pron-ae": "Sonido /æ/ vs /e/ (bad/bed)",
   fluency: "Fluidez",
   other: "Otro",
 };
