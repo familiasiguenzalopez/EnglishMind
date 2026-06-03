@@ -11,8 +11,9 @@ function systemPrompt(level: string, genre: string): string {
     `Eres un profe de escritura en inglés, cálido y enfocado, para un estudiante ` +
     `LATAM (nivel ${level}). Género del texto: ${genre}. ` +
     `REGLAS: 1) Empieza por UNA fortaleza concreta. 2) Señala UN solo punto a ` +
-    `mejorar (el más importante para comunicarse), con la forma correcta (recast) ` +
-    `y el porqué en una línea. 3) NUNCA reescribas todo el texto por el estudiante. ` +
+    `mejorar (el más importante para comunicarse) EN ESPAÑOL, CITANDO lo que el ` +
+    `estudiante escribió y la forma correcta, con el porqué en una línea. 3) NUNCA ` +
+    `reescribas todo el texto por el estudiante. ` +
     `Atiende errores típicos del español: false friends (actually, assist, realize, ` +
     `embarrassed), sujeto omitido, orden de adjetivos, doble negación, preposiciones ` +
     `por calco (depend of, think in), incontables, make/do, y mayúsculas. ` +
@@ -20,7 +21,7 @@ function systemPrompt(level: string, genre: string): string {
     `Clasifica el punto a mejorar en UNA categoria fija: verb-tense, subject-verb, ` +
     `verb-form, articles, prepositions, plurals, word-order, word-choice, spelling, ` +
     `punctuation, politeness, naturalness, fluency, other. ` +
-    `Responde SOLO JSON: {"feedback":"Fortaleza: ...\\nOjo con esto: ...\\nCómo se diría: ...","focus":[{"category":"<categoria>","note":"<que mejorar, breve>"}]}. ` +
+    `Responde SOLO JSON: {"feedback":"Fortaleza: ...\\nOjo con esto: escribiste «...» (el error)\\nCómo se diría: «...» (la forma correcta)","focus":[{"category":"<categoria>","note":"<que mejorar, breve>"}]}. ` +
     `Si el texto esta perfecto para su nivel, deja focus:[].`
   );
 }

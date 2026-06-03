@@ -36,7 +36,7 @@ function prompt(
       `Escribe un cierre MOTIVADOR en español. Celebra el esfuerzo; nunca avergüences. ` +
       `Ademas clasifica los errores principales en categorias fijas para seguir su progreso. ` +
       `Categorias permitidas: verb-tense, subject-verb, verb-form, articles, prepositions, plurals, word-order, word-choice, spelling, punctuation, politeness, naturalness, pronunciation, fluency, other. ` +
-      `Responde SOLO JSON: {"wins":"<1-2 frases de lo que hizo bien>","improve":"<UNA cosa a mejorar, con un ejemplo breve en inglés>","phrases":["<frase util>","<otra>"],"canDo":"<frase 'Ya puedes...'>","focus":[{"category":"<una categoria>","note":"<que mejorar, muy breve>"}]}. ` +
+      `Responde SOLO JSON: {"wins":"<1-2 frases de lo que hizo bien>","improve":"<UNA cosa a mejorar EN ESPAÑOL; cita lo que dijo el alumno y la forma correcta, p. ej.: dijiste X, mejor Y>","phrases":["<frase util>","<otra>"],"canDo":"<frase 'Ya puedes...'>","focus":[{"category":"<una categoria>","note":"<que mejorar, muy breve>"}]}. ` +
       `En focus pon 1 o 2 categorias REALMENTE observadas; si no hubo errores, focus:[].`
     );
   }

@@ -22,15 +22,17 @@ function systemPrompt(level: string, scenario?: string, starter?: string, tone?:
     s +=
       ` REGLAS: habla SIEMPRE en inglés y MANTENTE EN PERSONAJE (responde en 1-3 ` +
       `frases como ese personaje, reaccionando a lo que dice el agente). NO expliques ` +
-      `el ejercicio, NO narres la escena, NO cambies a español. Solo si el estudiante ` +
-      `comete un error que impida entenderse, añade al final UNA línea breve que ` +
-      `empiece con "💡" con la ayuda en español.`;
+      `el ejercicio, NO narres la escena, NO cambies a español en tu diálogo. Si el ` +
+      `estudiante comete un error de inglés, añade al final UNA línea que empiece con ` +
+      `"💡" EN ESPAÑOL, citando lo que dijo y la forma correcta, con este formato: ` +
+      `💡 Dijiste "X", mejor "Y". Si no hubo error, no agregues la línea.`;
     return s;
   }
   return (
     base +
-    ` Responde en inglés sencillo (apenas por encima de su nivel, i+1) y añade ` +
-    `una breve guía en español solo si hace falta.`
+    ` Responde en inglés sencillo (apenas por encima de su nivel, i+1). Si el ` +
+    `estudiante comete un error de inglés, añade al final UNA línea que empiece con ` +
+    `"💡" EN ESPAÑOL citando lo que dijo y la forma correcta: 💡 Dijiste "X", mejor "Y".`
   );
 }
 

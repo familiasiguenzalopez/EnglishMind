@@ -15,6 +15,7 @@ export default function Certificado() {
   const [issuing, setIssuing] = useState(false);
   const [publicId, setPublicId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -78,6 +79,13 @@ export default function Certificado() {
         MCER/CEFR: una credencial de progreso <strong>verificable</strong>. No es
         un examen oficial acreditado.
       </p>
+      <button
+        type="button"
+        onClick={() => setShowInfo(true)}
+        className="mt-2 text-sm font-semibold text-secondary underline-offset-2 hover:underline"
+      >
+        ¿Qué es y cómo se obtiene? →
+      </button>
 
       {loading ? (
         <p className="mt-6 text-ink-muted">Cargando…</p>
@@ -145,6 +153,68 @@ export default function Certificado() {
         mini-mapeo legible para reclutadores (p. ej. B1 ≈ sostiene una
         conversación de trabajo).
       </p>
+
+      {showInfo && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5"
+          onClick={() => setShowInfo(false)}
+        >
+          <div
+            className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-lg border border-line bg-surface p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-display text-xl font-extrabold text-ink-bright">
+              Certificación CEFR, explicada
+            </h3>
+
+            <div className="mt-4 space-y-4 text-sm">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wide text-secondary">¿Qué es?</div>
+                <p className="mt-0.5 text-ink">
+                  Un <strong>EnglishMind Proficiency Statement</strong>: una credencial de
+                  progreso alineada al <strong>MCER/CEFR</strong> (el estándar europeo de
+                  niveles de idioma). Es <strong>verificable</strong> con un QR público.
+                </p>
+              </div>
+
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wide text-secondary">Los niveles</div>
+                <p className="mt-0.5 text-ink">
+                  <strong>A1–A2</strong> básico · <strong>B1–B2</strong> intermedio
+                  (B1 ≈ sostienes una conversación de trabajo) · <strong>C1–C2</strong> avanzado.
+                </p>
+              </div>
+
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wide text-secondary">¿Cómo se obtiene en la app?</div>
+                <ol className="mt-1 space-y-1.5 text-ink">
+                  <li><span className="font-bold text-secondary">1.</span> Haz el <Link href="/placement" className="text-secondary underline-offset-2 hover:underline">placement</Link> para fijar tu nivel inicial.</li>
+                  <li><span className="font-bold text-secondary">2.</span> Avanza en tu <Link href="/aprender" className="text-secondary underline-offset-2 hover:underline">camino</Link>: conversación, pronunciación, escritura y vocabulario suman a tu competencia.</li>
+                  <li><span className="font-bold text-secondary">3.</span> Tu nivel CEFR se actualiza con tu desempeño en las 4 destrezas (descriptores can-do).</li>
+                  <li><span className="font-bold text-secondary">4.</span> Genera tu certificado aquí: obtienes un QR y un enlace que <strong>cualquiera puede verificar sin cuenta</strong>.</li>
+                </ol>
+              </div>
+
+              <div className="rounded-md border border-warning bg-surface2 p-3">
+                <div className="text-[11px] font-bold uppercase tracking-wide text-warning">Importante</div>
+                <p className="mt-0.5 text-ink">
+                  Es una credencial de <strong>progreso</strong>, honesta y verificable —
+                  <strong> no</strong> sustituye un examen oficial acreditado (TOEFL, IELTS,
+                  Cambridge). La página de verificación lo dice con claridad.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowInfo(false)}
+              className="mt-5 w-full rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-white transition hover:bg-primary-dim"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

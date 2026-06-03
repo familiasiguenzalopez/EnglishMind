@@ -20,6 +20,8 @@ type Result = {
   fluency: number | null;
   completeness: number | null;
   words: WordScore[];
+  assessed?: boolean;
+  debug?: { status?: string | null; hasNBest?: boolean; hasPA?: boolean; wordCount?: number };
 };
 
 function tone(v: number | null) {
@@ -140,7 +142,28 @@ export function AzurePronunciation({
 
       {error && <p className="mt-3 text-sm text-warning">{error}</p>}
 
-      {result && (
+      {result && result.assessed === false && (
+        <div className="mt-4 rounded-md border border-warning bg-surface2 p-3 text-sm">
+          <p className="text-ink">
+            Te escuché decir:{" "}
+            <span className="font-semibold text-ink-bright">
+              “{result.recognized || result.words.map((w) => w.word).join(" ")}”
+            </span>
+          </p>
+          <p className="mt-1 text-xs text-warning">
+            Azure reconoció tu lectura pero no devolvió la evaluación detallada
+            (precisión/fluidez). Estamos ajustando la configuración del servicio.
+          </p>
+          {result.debug && (
+            <p className="mt-1 text-[10px] text-ink-dim">
+              debug: status={String(result.debug.status)} · PA={String(result.debug.hasPA)} ·
+              palabras={result.debug.wordCount}
+            </p>
+          )}
+        </div>
+      )}
+
+      {result && result.assessed !== false && (
         <div className="mt-4">
           <div className="flex items-end gap-2">
             <span className={"font-display text-4xl font-extrabold " + tone(result.pron)}>

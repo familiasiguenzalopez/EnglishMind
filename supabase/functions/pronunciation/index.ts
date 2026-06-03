@@ -40,7 +40,7 @@ Deno.serve(async (req: Request) => {
   );
 
   const url =
-    `https://${REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-US`;
+    `https://${REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-US&format=detailed`;
 
   let r: Response;
   try {
@@ -73,6 +73,10 @@ Deno.serve(async (req: Request) => {
     error: w.PronunciationAssessment?.ErrorType ?? "None",
   }));
 
+  // ¿Azure devolvió evaluación o solo reconocimiento?
+  const assessed =
+    pa.PronScore != null || words.some((w: { accuracy: number | null }) => w.accuracy != null);
+
   return json({
     recognized: data?.DisplayText ?? "",
     pron: pa.PronScore ?? null,
@@ -80,6 +84,13 @@ Deno.serve(async (req: Request) => {
     fluency: pa.FluencyScore ?? null,
     completeness: pa.CompletenessScore ?? null,
     words,
+    assessed,
+    debug: {
+      status: data?.RecognitionStatus ?? null,
+      hasNBest: Array.isArray(data?.NBest),
+      hasPA: !!nb.PronunciationAssessment,
+      wordCount: words.length,
+    },
   });
 });
 
