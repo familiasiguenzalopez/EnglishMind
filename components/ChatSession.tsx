@@ -74,7 +74,9 @@ export function ChatSession({
   const [talkPulse, setTalkPulse] = useState(0);
   const [memory, setMemory] = useState<string[]>([]);
   const [memExtracted, setMemExtracted] = useState(false);
+  const [stuck, setStuck] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const hintRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const t = setInterval(() => setSecs((s) => s + 1), 1000);
@@ -86,7 +88,11 @@ export function ChatSession({
     });
     setLook(loadLook());
     if (!isRoleplay) loadMemory().then(setMemory);
-    return () => clearInterval(t);
+    armHint();
+    return () => {
+      clearInterval(t);
+      if (hintRef.current) clearTimeout(hintRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -159,10 +165,28 @@ export function ChatSession({
     return h;
   }
 
+  // Hints proactivos: si tras la respuesta del tutor te quedas sin escribir,
+  // ofrecemos una idea (suave, sin presionar). Se cancela al teclear/hablar/enviar.
+  function disarmHint() {
+    if (hintRef.current) {
+      clearTimeout(hintRef.current);
+      hintRef.current = null;
+    }
+    setStuck(false);
+  }
+  function armHint() {
+    disarmHint();
+    hintRef.current = setTimeout(() => {
+      setStuck(true);
+      void askSuggest();
+    }, 9000);
+  }
+
   async function ask(text: string) {
     setError(null);
     setLoading(true);
     setSuggestions([]);
+    disarmHint();
     try {
       const supabase = createClient();
       const { data, error } = await supabase.functions.invoke("tutor-brain", {
@@ -173,6 +197,7 @@ export function ChatSession({
       const meta = data.model ? `vía ${data.model} · Nivel ${data.tier}` : undefined;
       setMessages((m) => [...m, { role: "tutor", text: data.reply, meta }]);
       speak(data.reply);
+      armHint();
       award(10, { id: "first-conversation", label: "Hablaste con tu tutor" });
     } catch {
       setError("El tutor no pudo responder ahora. Vamos de nuevo cuando quieras.");
@@ -190,6 +215,7 @@ export function ChatSession({
   }
 
   function mic() {
+    disarmHint();
     const w = window as unknown as Record<string, any>;
     const SR = w.SpeechRecognition || w.webkitSpeechRecognition;
     if (!SR) return;
@@ -351,6 +377,11 @@ export function ChatSession({
 
       {error && <p className="mb-2 text-sm text-warning">{error}</p>}
 
+      {stuck && (
+        <p className="mb-1 text-xs text-secondary">
+          💡 Tómate tu tiempo… aquí va una idea para responder:
+        </p>
+      )}
       {/* Sugerencias */}
       {suggestions.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-2">
@@ -385,7 +416,10 @@ export function ChatSession({
         )}
         <input
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => {
+            setInput(e.target.value);
+            disarmHint();
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { award } from "@/lib/gamify";
+import { L1_DECK } from "@/lib/l1deck";
 
 // Repaso diario · SM-2 simplificado. Requiere sesión (datos por usuario).
 // Mazo inicial de frases útiles si el usuario aún no tiene tarjetas.
@@ -75,20 +76,18 @@ export default function Repaso() {
           setState("guest");
           return;
         }
-        const { count } = await supabase
+        // Siembra el mazo inicial + el mazo "consciente del español" (falsos
+        // amigos). Idempotente: solo inserta las tarjetas que aún no tengas.
+        const { data: existing } = await supabase
           .from("review_items")
-          .select("id", { count: "exact", head: true })
+          .select("front")
           .eq("user_id", user.id);
-        if ((count ?? 0) === 0) {
+        const have = new Set((existing ?? []).map((r: { front: string }) => r.front));
+        const seed = [...STARTER_DECK, ...L1_DECK].filter((d) => !have.has(d.front));
+        if (seed.length) {
           await supabase
             .from("review_items")
-            .insert(
-              STARTER_DECK.map((d) => ({
-                user_id: user.id,
-                front: d.front,
-                back: d.back,
-              })),
-            );
+            .insert(seed.map((d) => ({ user_id: user.id, front: d.front, back: d.back })));
         }
         const nowIso = new Date().toISOString();
         const { data: due } = await supabase
