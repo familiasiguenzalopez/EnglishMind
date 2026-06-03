@@ -3,6 +3,8 @@ import { AuthStatus } from "@/components/AuthStatus";
 import { XpStreak } from "@/components/XpStreak";
 import { loadLearningPath } from "@/lib/loadPath";
 import { lessonHref } from "@/lib/path";
+import { Mascot } from "@/components/Mascot";
+import { HomeWelcomeGate } from "@/components/HomeWelcomeGate";
 
 // Home = hub metodológico: retoma el camino (continuar donde quedaste, con la
 // meta can-do actual), y debajo las prácticas y el resto. La barra inferior
@@ -30,12 +32,28 @@ export default async function HomeDashboard() {
   const meta = currentUnit?.can_do ?? null;
 
   return (
-    <main className="mx-auto max-w-2xl px-5 pt-10 pb-28">
-      <div className="mb-4 flex justify-end">
+    <main className="mx-auto max-w-2xl px-5 pt-8 pb-28">
+      <HomeWelcomeGate />
+
+      <div className="mb-4 flex items-center justify-between">
+        <span className="font-display text-lg font-extrabold text-ink-bright">EnglishMind</span>
         <AuthStatus />
       </div>
 
-      <XpStreak />
+      {/* Saludo cálido con la mascota */}
+      <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-4">
+        <Mascot state="idle" size={72} />
+        <div className="min-w-0">
+          <div className="font-display text-lg font-extrabold text-ink-bright">
+            ¡Hola! ¿Listo para practicar?
+          </div>
+          <div className="text-xs text-ink-muted">Unos minutos hoy te acercan a tu meta. 🎯</div>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <XpStreak />
+      </div>
 
       <Link
         href="/onboarding"
@@ -118,10 +136,10 @@ export default async function HomeDashboard() {
           <Link
             key={p.href}
             href={p.href}
-            className="rounded-lg border border-line bg-surface p-4 transition hover:border-primary"
+            className="rounded-2xl border border-line bg-surface p-4 transition hover:border-primary"
           >
-            <div className="text-2xl">{p.icon}</div>
-            <div className="mt-1.5 font-semibold text-ink-bright">{p.label}</div>
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-surface3 text-xl">{p.icon}</div>
+            <div className="mt-2 font-semibold text-ink-bright">{p.label}</div>
             <div className="text-xs text-ink-muted">{p.sub}</div>
           </Link>
         ))}
