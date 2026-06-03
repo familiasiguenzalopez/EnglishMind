@@ -10,7 +10,7 @@ import { cn } from "@/lib/cn";
 const TABS = [
   { href: "/home", label: "Inicio", icon: "🏠" },
   { href: "/aprender", label: "Aprender", icon: "🛤️" },
-  { href: "/escenarios", label: "Practicar", icon: "🎬" },
+  { href: "/entrenador", label: "Practicar", icon: "🎬" },
   { href: "/repaso", label: "Repasar", icon: "🔁" },
   { href: "/progreso", label: "Progreso", icon: "📊" },
 ];

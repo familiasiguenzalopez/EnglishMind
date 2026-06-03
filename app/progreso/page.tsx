@@ -5,6 +5,7 @@ import { award } from "@/lib/gamify";
 import { createClient } from "@/lib/supabase/client";
 import { blobToWav16k, bytesToBase64 } from "@/lib/wav";
 import { LearningInsights } from "@/components/LearningInsights";
+import { ProgressRadar } from "@/components/ProgressRadar";
 
 // "Tu progreso, en tu propia voz" (Lote 1 · #6).
 // Graba con MediaRecorder y guarda EN EL DISPOSITIVO (localStorage), opt-in.
@@ -153,6 +154,8 @@ export default function Progreso() {
         La mejor prueba de avance es oírte a ti mismo de antes. Graba la misma
         frase cada cierto tiempo y escucha cuánto avanzaste.
       </p>
+
+      <ProgressRadar />
 
       <LearningInsights />
 
