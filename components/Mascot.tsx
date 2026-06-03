@@ -82,13 +82,15 @@ export function Mascot({
 
       <svg viewBox="0 0 100 116" width={size * 0.92} height={size} className="relative">
         <g className={headClass}>
-          {/* Alas */}
-          <ellipse cx="24" cy="82" rx="9" ry="19" fill="#12b3a1" />
-          <ellipse cx="76" cy="82" rx="9" ry="19" fill="#12b3a1" />
+          {/* Cola */}
+          <path d="M40 100 L35 116 L44 109 L50 117 L56 109 L65 116 L60 100 Z" fill="#0fb3a3" />
           {/* Cuerpo */}
           <ellipse cx="50" cy="82" rx="27" ry="30" fill="#27e0c4" />
           {/* Panza */}
           <ellipse cx="50" cy="88" rx="15" ry="18" fill="#bdf3ea" />
+          {/* Alas plegadas (al frente) */}
+          <path d="M26 73 Q17 84 23 99 Q33 94 33 79 Z" fill="#0fb3a3" />
+          <path d="M74 73 Q83 84 77 99 Q67 94 67 79 Z" fill="#0fb3a3" />
           {/* Cresta (plumas) */}
           <ellipse cx="42" cy="17" rx="3" ry="8" fill="#9b6bff" transform="rotate(-22 42 17)" />
           <ellipse cx="50" cy="13" rx="3.5" ry="9" fill="#ff6b3d" />
@@ -102,10 +104,12 @@ export function Mascot({
             <g className="em-eye">
               <circle cx="41" cy="38" r="6.4" fill="#ffffff" stroke="#0f8e80" strokeWidth="0.8" />
               <circle cx="42" cy="39" r="3.2" fill="#1c1c22" />
+              <circle cx="40.3" cy="37.6" r="1.1" fill="#ffffff" />
             </g>
             <g className="em-eye">
               <circle cx="59" cy="38" r="6.4" fill="#ffffff" stroke="#0f8e80" strokeWidth="0.8" />
               <circle cx="58" cy="39" r="3.2" fill="#1c1c22" />
+              <circle cx="56.3" cy="37.6" r="1.1" fill="#ffffff" />
             </g>
           </g>
           {/* Mejillas */}
@@ -113,6 +117,7 @@ export function Mascot({
           <circle cx="67" cy="48" r="3.6" fill="#ff8a6a" opacity="0.45" />
           {/* Pico superior (gancho de loro) */}
           <path d="M40 48 Q50 43 60 48 Q58 59 50 63 Q42 59 40 48 Z" fill="#ff6b3d" />
+          <circle cx="50" cy="50.5" r="0.9" fill="#c2451f" />
           {/* Pico inferior (se abre al hablar) */}
           <ellipse cx="50" cy="59" rx="6" ry="3" fill="#e0552e" {...lowerBeak.props} style={lowerBeak.style} />
         </g>

@@ -37,6 +37,13 @@ export default async function HomeDashboard() {
 
       <XpStreak />
 
+      <Link
+        href="/onboarding"
+        className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-secondary bg-surface2 px-4 py-2.5 text-sm font-semibold text-ink-bright transition hover:border-primary"
+      >
+        ✨ Personaliza tu experiencia (tutor, objetivo y avatar)
+      </Link>
+
       {/* Retoma tu camino (lo metodológico primero) */}
       <section className="mt-6 rounded-lg border border-line bg-surface p-5">
         <div className="flex items-center justify-between">
