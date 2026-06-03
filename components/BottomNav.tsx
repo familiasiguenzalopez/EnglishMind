@@ -15,8 +15,10 @@ const TABS = [
   { href: "/progreso", label: "Progreso", icon: "📊" },
 ];
 
-// Pantallas a pantalla completa o fuera del shell: sin barra.
-const HIDE_PREFIXES = ["/sesion", "/login", "/verify", "/auth"];
+// Pantallas a pantalla completa o fuera del shell: sin barra. El onboarding y el
+// placement son flujos inmersivos con su propia navegación (Atrás/Siguiente), así
+// que la barra inferior no debe taparles los botones.
+const HIDE_PREFIXES = ["/sesion", "/login", "/verify", "/auth", "/onboarding", "/placement"];
 
 export function BottomNav() {
   const pathname = usePathname() || "/";

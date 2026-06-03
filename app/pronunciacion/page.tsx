@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PronunciationScore, type PronStatus } from "@/components/ui/PronunciationScore";
 import { award } from "@/lib/gamify";
 import { loadSoundMap, recordSound } from "@/lib/soundmap";
@@ -63,6 +64,7 @@ const SOUNDS: Sound[] = [
 const clean = (s: string) => s.toLowerCase().replace(/[^a-z]/g, "");
 
 export default function Pronunciacion() {
+  const router = useRouter();
   const [sound, setSound] = useState<Sound>(SOUNDS[0]);
   const [target, setTarget] = useState<{ word: string; partner: string }>({
     word: SOUNDS[0].pairs[0][0],
@@ -187,6 +189,16 @@ export default function Pronunciacion() {
 
   return (
     <main className="mx-auto max-w-2xl px-5 pt-10 pb-28">
+      <button
+        type="button"
+        onClick={() => {
+          if (typeof window !== "undefined" && window.history.length > 1) router.back();
+          else router.push("/entrenador");
+        }}
+        className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-muted transition hover:text-ink"
+      >
+        ‹ Volver
+      </button>
       <h1 className="font-display text-3xl font-extrabold text-ink-bright">
         Mapa de sonidos
       </h1>

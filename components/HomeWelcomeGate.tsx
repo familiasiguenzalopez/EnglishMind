@@ -40,7 +40,14 @@ export function HomeWelcomeGate() {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center bg-black/70 p-5">
+    <div
+      className="fixed inset-0 z-[70] grid place-items-center p-5"
+      style={{
+        background: "var(--bg)",
+        backgroundImage:
+          "radial-gradient(900px 540px at 85% -8%, rgba(124,92,255,0.30), transparent 60%), radial-gradient(820px 520px at 0% 0%, rgba(73,168,255,0.20), transparent 55%), radial-gradient(760px 620px at 50% 112%, rgba(255,122,89,0.16), transparent 60%)",
+      }}
+    >
       <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-6 text-center">
         <div className="flex justify-center">
           <Mascot state="speaking" size={96} />

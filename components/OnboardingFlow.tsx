@@ -45,6 +45,8 @@ export function OnboardingFlow({ routes }: { routes: Route[] }) {
   const [tone, setTone] = useState("Cercano");
   const [look, setLook] = useState<AvatarLook>(DEFAULT_LOOK);
   const [busy, setBusy] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [talking, setTalking] = useState(false);
 
   useEffect(() => {
     setLook(loadLook());
@@ -56,7 +58,7 @@ export function OnboardingFlow({ routes }: { routes: Route[] }) {
 
   const total = 5;
   const scene = getScene(STEP_SCENE[step] ?? "tutor")!;
-  const charState: CharState = step === 0 || step === 4 ? "speaking" : "idle";
+  const charState: CharState = talking || step === 0 || step === 4 ? "speaking" : "idle";
 
   const bubble = [
     "¡Hola! 👋 Soy tu loro compañero. En menos de un minuto dejamos tu inglés a tu medida.",
@@ -65,6 +67,35 @@ export function OnboardingFlow({ routes }: { routes: Route[] }) {
     "Elige cómo se ve tu personaje en las prácticas. 🙂",
     "¡Listo! Armé tu camino a tu medida. ¿Empezamos? 🎉",
   ][step];
+
+  // El loro habla en español: lee en voz alta la burbuja de cada paso (con lip-sync
+  // vía el estado "talking"). Se puede silenciar con el botón 🔊/🔇.
+  function speakEs(text: string) {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    const synth = window.speechSynthesis;
+    const say = text.replace(/[^\p{L}\p{N}\p{P}\p{Z}]/gu, "").trim(); // sin emojis
+    if (!say) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(say);
+    const vs = synth.getVoices();
+    const v = vs.find((x) => x.lang === "es-US") || vs.find((x) => x.lang.startsWith("es"));
+    if (v) u.voice = v;
+    u.lang = v ? v.lang : "es-US";
+    u.onstart = () => setTalking(true);
+    u.onend = () => setTalking(false);
+    synth.speak(u);
+  }
+
+  useEffect(() => {
+    if (muted) {
+      window.speechSynthesis?.cancel();
+      setTalking(false);
+      return;
+    }
+    speakEs(bubble);
+    return () => window.speechSynthesis?.cancel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, muted]);
 
   function preview(a: string) {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
@@ -97,6 +128,16 @@ export function OnboardingFlow({ routes }: { routes: Route[] }) {
   return (
     <main className="relative mx-auto flex min-h-[100dvh] max-w-xl flex-col overflow-hidden px-5 pt-8 pb-8">
       <SceneBackground scene={scene} />
+
+      {/* Silenciar / activar la voz del loro */}
+      <button
+        type="button"
+        onClick={() => setMuted((m) => !m)}
+        aria-label={muted ? "Activar la voz del loro" : "Silenciar la voz del loro"}
+        className="absolute right-4 top-6 z-10 grid h-9 w-9 place-items-center rounded-full border border-line bg-surface text-base transition hover:border-primary"
+      >
+        {muted ? "🔇" : "🔊"}
+      </button>
 
       {/* Progreso */}
       <div className="relative flex items-center justify-center gap-1.5">
