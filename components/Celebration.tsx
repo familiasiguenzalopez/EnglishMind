@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { touchStreak } from "@/lib/gamify";
+import { Mascot } from "@/components/Mascot";
 
 // Mascota + toast que CELEBRA y acompaña, nunca culpa ni presiona.
 // Escucha "em-celebrate" (XP/logros), lanza confeti y saluda el regreso.
@@ -97,14 +98,20 @@ export function Celebration() {
               key={p.id}
               className="em-bounce-in flex items-center gap-2 rounded-full border border-secondary bg-surface3 px-4 py-2.5 text-sm font-semibold text-ink shadow-lg"
             >
-              <span
-                className="em-wiggle grid h-6 w-6 place-items-center rounded-full text-sm"
-                style={{
-                  background: "linear-gradient(135deg,var(--color-primary),var(--color-secondary))",
-                }}
-              >
-                {p.mascot}
-              </span>
+              {p.mascot === "🦜" ? (
+                <span className="em-wiggle">
+                  <Mascot state="speaking" size={38} />
+                </span>
+              ) : (
+                <span
+                  className="em-wiggle grid h-6 w-6 place-items-center rounded-full text-sm"
+                  style={{
+                    background: "linear-gradient(135deg,var(--color-primary),var(--color-secondary))",
+                  }}
+                >
+                  {p.mascot}
+                </span>
+              )}
               {p.text}
             </div>
           ))}

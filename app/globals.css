@@ -168,6 +168,11 @@ h3 {
   transform-origin: center;
   animation: em-talk 0.5s ease-in-out infinite;
 }
+.em-beak {
+  transform-box: fill-box;
+  transform-origin: center top;
+  animation: em-talk 0.5s ease-in-out infinite;
+}
 .em-speak {
   transform-box: fill-box;
   transform-origin: center bottom;
@@ -225,6 +230,7 @@ h3 {
   .em-look,
   .em-brow,
   .em-mouth-talk,
+  .em-beak,
   .em-float,
   .em-ripple {
     animation: none !important;

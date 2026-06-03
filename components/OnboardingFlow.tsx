@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { SceneCharacter, type CharState } from "@/components/scene/SceneCharacter";
 import { SceneBackground } from "@/components/scene/SceneBackground";
+import { Mascot } from "@/components/Mascot";
 import { getScene } from "@/lib/scenes";
 import { LOOKS, loadLook, saveLook, DEFAULT_LOOK, type AvatarLook } from "@/lib/avatar";
 import { loadTutorPrefs, saveTutorPrefs } from "@/lib/tutorPrefs";
@@ -58,10 +59,10 @@ export function OnboardingFlow({ routes }: { routes: Route[] }) {
   const charState: CharState = step === 0 || step === 4 ? "speaking" : "idle";
 
   const bubble = [
-    "¡Hola! 👋 Soy tu compañero de práctica. En menos de un minuto dejamos tu inglés a tu medida.",
+    "¡Hola! 👋 Soy tu loro compañero. En menos de un minuto dejamos tu inglés a tu medida.",
     "¿Por qué quieres aprender inglés? Elige lo que más te importa ahora — no hay respuesta incorrecta.",
     "¿Cómo quieres que suene y se sienta tu tutor? Toca un acento para escucharlo.",
-    "Ahora diséñame a mí. ¿Qué estilo te gusta?",
+    "Elige cómo se ve tu personaje en las prácticas. 🙂",
     "¡Listo! Armé tu camino a tu medida. ¿Empezamos? 🎉",
   ][step];
 
@@ -112,7 +113,7 @@ export function OnboardingFlow({ routes }: { routes: Route[] }) {
 
       {/* Personaje + burbuja */}
       <div className="relative mt-4 flex flex-col items-center">
-        <SceneCharacter scene={scene} state={charState} look={look} size={120} />
+        <Mascot state={charState} size={120} />
         <div
           key={"b" + step}
           className="em-step mt-3 max-w-sm rounded-2xl border border-line bg-surface px-4 py-3 text-center text-sm text-ink"
@@ -180,7 +181,9 @@ export function OnboardingFlow({ routes }: { routes: Route[] }) {
         )}
 
         {step === 3 && (
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-col items-center gap-3">
+            <SceneCharacter scene={scene} state="idle" look={look} size={92} />
+            <div className="flex flex-wrap justify-center gap-2">
             {LOOKS.map((l) => (
               <button key={l.id} type="button" onClick={() => setLook(l)} className={chip(look.id === l.id)}>
                 <span
@@ -190,6 +193,7 @@ export function OnboardingFlow({ routes }: { routes: Route[] }) {
                 {l.name}
               </button>
             ))}
+            </div>
           </div>
         )}
 
