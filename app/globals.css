@@ -10,32 +10,32 @@
    (--font-display / --font-body los inyecta next/font en <html>)
    ─────────────────────────────────────────────────────────── */
 :root {
-  /* Superficies (dark, 4 niveles) */
-  --bg: #0b0d10;
-  --surface: #14181d;
-  --surface2: #1b2128;
-  --surface3: #232b34;
+  /* Superficies (índigo profundo, 4 niveles) — paleta viva estilo ELSA */
+  --bg: #120d2e;
+  --surface: #1a1442;
+  --surface2: #221a52;
+  --surface3: #2e2566;
 
   /* Bordes (2 niveles) */
-  --border: #2a333d;
-  --border2: #3a4651;
+  --border: #352c66;
+  --border2: #4a3f88;
 
-  /* Texto (bright / normal / muted + dim) */
-  --text-bright: #f5f8fa;
-  --text: #e9edf0;
-  --text-muted: #8c99a6;
-  --dim: #5c6873;
+  /* Texto (blanco-lavanda) */
+  --text-bright: #f4f1ff;
+  --text: #e7e1fb;
+  --text-muted: #a79fce;
+  --dim: #6f6699;
 
   /* Marca + semánticos */
-  --color-primary: #ff6b3d;     /* coral-naranja: energía LATAM */
-  --color-primary-dim: #e0552e;
-  --color-secondary: #27e0c4;   /* teal: éxito, XP, acierto */
-  --color-accent: #9b6bff;      /* violeta: acento/realce */
+  --color-primary: #7c5cff;     /* violeta: marca, CTAs */
+  --color-primary-dim: #6a49f0;
+  --color-secondary: #2ee6c4;   /* menta: éxito, XP, acierto */
+  --color-accent: #49a8ff;      /* azul: acento (par del violeta) */
 
   /* Feedback */
-  --success: #27e0c4;  /* pronunciación correcta */
-  --warning: #f5b544;  /* por mejorar (cálido, no alarma) */
-  --error: #ff5d5d;    /* solo errores críticos */
+  --success: #2ee6c4;  /* correcto */
+  --warning: #ffc24b;  /* por mejorar (ámbar cálido, no alarma) */
+  --error: #ff6b81;    /* solo errores críticos */
 
   /* Radios */
   --radius-sm: 10px;
@@ -66,8 +66,9 @@ body {
   color: var(--text);
   font-family: var(--font-body), "Hanken Grotesk", sans-serif;
   background-image:
-    radial-gradient(900px 500px at 85% -5%, rgba(255, 107, 61, 0.1), transparent 60%),
-    radial-gradient(800px 500px at 5% 0%, rgba(39, 224, 196, 0.08), transparent 55%);
+    radial-gradient(900px 540px at 85% -8%, rgba(124, 92, 255, 0.22), transparent 60%),
+    radial-gradient(820px 520px at 0% 0%, rgba(73, 168, 255, 0.14), transparent 55%),
+    radial-gradient(760px 620px at 50% 112%, rgba(255, 122, 89, 0.1), transparent 60%);
   background-attachment: fixed;
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
