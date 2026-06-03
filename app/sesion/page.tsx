@@ -18,9 +18,25 @@ type LessonContent = {
 export default async function SesionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ leccion?: string; escenario?: string }>;
+  searchParams: Promise<{ leccion?: string; escenario?: string; tema?: string }>;
 }) {
-  const { leccion, escenario } = await searchParams;
+  const { leccion, escenario, tema } = await searchParams;
+
+  // 0) Escenario a medida ("crea el tuyo")
+  if (tema && tema.trim()) {
+    const scene = getScene("tutor")!;
+    const scenario =
+      `Haz un ROLE-PLAY de esta situación con el estudiante (que practica inglés): ${tema}. ` +
+      `Tú interpretas al otro personaje; saluda primero y mantente en personaje.`;
+    return (
+      <ChatSession
+        scene={scene}
+        scenario={scenario}
+        starter="Hi there! Let's get started."
+        goal={`Practica: ${tema}`}
+      />
+    );
+  }
 
   // 1) Escena de la galería
   if (escenario) {

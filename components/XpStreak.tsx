@@ -38,15 +38,25 @@ export function XpStreak() {
   }, []);
 
   const pct = Math.min(100, Math.round(((xp % META) / META) * 100));
+  const level = Math.floor(xp / META) + 1;
+  const today = new Date();
+  const week = Array.from({ length: 7 }, (_, k) => {
+    const ago = 6 - k;
+    const d = new Date(today);
+    d.setDate(today.getDate() - ago);
+    return { letter: "DLMMJVS"[d.getDay()], active: ago < streak, isToday: ago === 0 };
+  });
 
   return (
     <>
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CefrBadge level={(cefr ?? "A1") as CefrLevel} />
-          <span className="text-sm text-ink-muted">Tu nivel</span>
+          <span className="rounded-full bg-surface3 px-2 py-0.5 text-xs font-bold text-ink">
+            Nivel {level}
+          </span>
         </div>
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-3 text-sm">
           <span className="font-semibold text-ink">
             🔥 {streak} {streak === 1 ? "día" : "días"}
           </span>
@@ -59,6 +69,26 @@ export function XpStreak() {
           className="h-full rounded-full bg-secondary transition-all"
           style={{ width: `${pct}%` }}
         />
+      </div>
+
+      {/* Racha semanal (estilo ELSA) */}
+      <div className="mt-3 flex items-center justify-between">
+        {week.map((d, k) => (
+          <div key={k} className="flex flex-col items-center gap-1">
+            <span className={"text-[10px] " + (d.isToday ? "font-bold text-primary" : "text-ink-dim")}>
+              {d.letter}
+            </span>
+            <span
+              className={
+                "grid h-7 w-7 place-items-center rounded-full text-[11px] " +
+                (d.active ? "bg-secondary text-bg" : "bg-surface3 text-ink-dim") +
+                (d.isToday ? " ring-2 ring-primary" : "")
+              }
+            >
+              {d.active ? "🔥" : "·"}
+            </span>
+          </div>
+        ))}
       </div>
     </>
   );
