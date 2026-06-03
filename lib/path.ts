@@ -43,6 +43,7 @@ export function lessonIcon(kind: string): string {
 export function lessonHref(kind: string, id: string): string {
   if (kind === "pronunciation") return `/pronunciacion?leccion=${id}`;
   if (kind === "writing") return `/escritura?leccion=${id}`;
+  if (kind === "vocab") return `/vocabulario?leccion=${id}`;
   return `/sesion?leccion=${id}`;
 }
 
