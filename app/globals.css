@@ -126,6 +126,14 @@ h3 {
   0% { transform: scale(0.62); opacity: 0.5; }
   100% { transform: scale(1.85); opacity: 0; }
 }
+@keyframes em-look {
+  0%, 35%, 100% { transform: translateX(0); }
+  45%, 70% { transform: translateX(1.6px); }
+}
+@keyframes em-listen {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-1px) rotate(2deg); }
+}
 
 .em-eye {
   transform-box: fill-box;
@@ -162,12 +170,24 @@ h3 {
 .em-step {
   animation: em-pop 0.4s ease-out both;
 }
+.em-look {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: em-look 6s ease-in-out infinite;
+}
+.em-listen {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: em-listen 2.6s ease-in-out infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .em-step,
   .em-eye,
   .em-bob,
   .em-speak,
+  .em-listen,
+  .em-look,
   .em-brow,
   .em-mouth-talk,
   .em-float,

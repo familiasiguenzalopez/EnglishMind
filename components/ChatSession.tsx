@@ -70,6 +70,7 @@ export function ChatSession({
   const [improved, setImproved] = useState<Insight[]>([]);
   const [prefs, setPrefs] = useState<TutorPrefs | null>(null);
   const [look, setLook] = useState<AvatarLook | null>(null);
+  const [talkPulse, setTalkPulse] = useState(0);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -114,6 +115,7 @@ export function ChatSession({
       u.rate = 1;
       u.onstart = () => setSpeaking(true);
       u.onend = () => setSpeaking(false);
+      u.onboundary = () => setTalkPulse((p) => p + 1);
       window.speechSynthesis.speak(u);
     } catch {
       /* sin TTS */
@@ -274,7 +276,7 @@ export function ChatSession({
 
       {/* Escenario: fondo ambientado + personaje 2D animado */}
       <div className="pt-2">
-        <SceneStage scene={scene} state={charState} look={look ?? undefined} />
+        <SceneStage scene={scene} state={charState} look={look ?? undefined} pulse={talkPulse} />
       </div>
 
       {goal && (
