@@ -12,6 +12,7 @@ import { type CharState } from "@/components/scene/SceneCharacter";
 import { loadLook, type AvatarLook } from "@/lib/avatar";
 import { getScene, type Scene } from "@/lib/scenes";
 import { recordSession, type Insight } from "@/lib/learnlog";
+import { loadMemory, saveMemory, mergeFacts } from "@/lib/tutorMemory";
 import { skillLabel } from "@/lib/skills";
 
 // Conversación v2 (estilo Speak): personaje que habla (avatar animado + TTS),
@@ -71,6 +72,8 @@ export function ChatSession({
   const [prefs, setPrefs] = useState<TutorPrefs | null>(null);
   const [look, setLook] = useState<AvatarLook | null>(null);
   const [talkPulse, setTalkPulse] = useState(0);
+  const [memory, setMemory] = useState<string[]>([]);
+  const [memExtracted, setMemExtracted] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -82,12 +85,37 @@ export function ChatSession({
       setMuted(!p.autoplay);
     });
     setLook(loadLook());
+    if (!isRoleplay) loadMemory().then(setMemory);
     return () => clearInterval(t);
   }, []);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  // Memoria del tutor (charla libre): tras unos turnos, extrae datos durables
+  // del alumno y los guarda para recordarlos en la próxima charla.
+  useEffect(() => {
+    if (isRoleplay || memExtracted) return;
+    if (messages.filter((m) => m.role === "user").length < 3) return;
+    setMemExtracted(true);
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.functions.invoke("convo-coach", {
+          body: { mode: "remember", level, history: buildHistory() },
+        });
+        const facts = Array.isArray(data?.facts) ? (data.facts as string[]) : [];
+        if (facts.length) {
+          const merged = mergeFacts(memory, facts);
+          setMemory(merged);
+          await saveMemory(merged);
+        }
+      } catch {
+        /* sin memoria */
+      }
+    })();
+  }, [messages, isRoleplay, memExtracted, level, memory]);
 
   const mmss = `${String(Math.floor(secs / 60)).padStart(2, "0")}:${String(secs % 60).padStart(2, "0")}`;
   const charState: CharState = speaking
@@ -138,7 +166,7 @@ export function ChatSession({
     try {
       const supabase = createClient();
       const { data, error } = await supabase.functions.invoke("tutor-brain", {
-        body: { message: text, level, scenario, starter, tone: prefs?.tone, history: buildHistory() },
+        body: { message: text, level, scenario, starter, tone: prefs?.tone, memory: isRoleplay ? undefined : memory, history: buildHistory() },
       });
       if (error) throw error;
       if (!data?.reply) throw new Error(data?.error ?? "sin respuesta");

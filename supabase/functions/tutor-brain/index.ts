@@ -6,7 +6,7 @@
 
 import { CORS, json, runChat, type ChatMsg } from "../_shared/orchestrator.ts";
 
-function systemPrompt(level: string, scenario?: string, starter?: string, tone?: string): string {
+function systemPrompt(level: string, scenario?: string, starter?: string, tone?: string, memory?: string[]): string {
   const base =
     `Eres un tutor de inglés cálido para un estudiante LATAM (nivel ${level}). ` +
     (tone ? `Tu tono es ${tone.toLowerCase()}. ` : "") +
@@ -32,7 +32,11 @@ function systemPrompt(level: string, scenario?: string, starter?: string, tone?:
     base +
     ` Responde en inglés sencillo (apenas por encima de su nivel, i+1). Si el ` +
     `estudiante comete un error de inglés, añade al final UNA línea que empiece con ` +
-    `"💡" EN ESPAÑOL citando lo que dijo y la forma correcta: 💡 Dijiste "X", mejor "Y".`
+    `"💡" EN ESPAÑOL citando lo que dijo y la forma correcta: 💡 Dijiste "X", mejor "Y".` +
+    (memory && memory.length
+      ? ` Recuerdas del estudiante (de charlas pasadas): ${memory.join("; ")}. ` +
+        `Retoma algo SOLO si viene al caso, con naturalidad; no lo recites ni lo fuerces.`
+      : "")
   );
 }
 
@@ -56,10 +60,11 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ error: "Method Not Allowed" }, 405);
 
-  const { message, level = "B1", scenario, starter, tone, history } = await req
+  const { message, level = "B1", scenario, starter, tone, memory, history } = await req
     .json()
     .catch(() => ({}));
   if (!message) return json({ error: "Falta 'message'" }, 400);
+  const mem = Array.isArray(memory) ? memory.filter((m: unknown): m is string => typeof m === "string") : [];
 
   const messages: ChatMsg[] = [
     ...sanitizeHistory(history),
@@ -67,7 +72,7 @@ Deno.serve(async (req: Request) => {
   ];
 
   try {
-    const r = await runChat("cerebro", systemPrompt(level, scenario, starter, tone), messages);
+    const r = await runChat("cerebro", systemPrompt(level, scenario, starter, tone, mem), messages);
     return json({
       reply: r.reply,
       provider: r.provider,

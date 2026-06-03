@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { loadTutorPrefs, saveTutorPrefs, type TutorPrefs as Prefs } from "@/lib/tutorPrefs";
+import { loadMemory, clearMemory } from "@/lib/tutorMemory";
 
 const ACCENTS = [
   { v: "en-US", l: "Estadounidense 🇺🇸" },
@@ -13,9 +14,11 @@ const TONES = ["Cercano", "Profesional", "Directo"];
 export function TutorPrefs() {
   const [p, setP] = useState<Prefs | null>(null);
   const [saved, setSaved] = useState(false);
+  const [mem, setMem] = useState<string[]>([]);
 
   useEffect(() => {
     loadTutorPrefs().then(setP);
+    loadMemory().then(setMem);
   }, []);
 
   function update(patch: Partial<Prefs>) {
@@ -109,6 +112,41 @@ export function TutorPrefs() {
           />
         </span>
       </button>
+
+      <div className="mt-4 border-t border-line pt-3">
+        <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
+          Lo que tu tutor recuerda de ti
+        </div>
+        {mem.length > 0 ? (
+          <>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {mem.map((f, i) => (
+                <span
+                  key={i}
+                  className="rounded-full border border-line bg-surface2 px-2.5 py-1 text-xs text-ink"
+                >
+                  {f}
+                </span>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                void clearMemory();
+                setMem([]);
+              }}
+              className="mt-2 text-xs text-ink-dim underline-offset-2 hover:text-danger hover:underline"
+            >
+              Borrar lo que recuerda
+            </button>
+          </>
+        ) : (
+          <p className="mt-1 text-xs text-ink-dim">
+            Aún nada. En la charla libre tu tutor recordará algunos datos tuyos para retomarlos contigo — y
+            siempre podrás borrarlos aquí.
+          </p>
+        )}
+      </div>
 
       <div className="mt-2 h-4 text-xs text-secondary">{saved ? "Guardado ✓" : ""}</div>
     </div>

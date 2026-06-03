@@ -40,6 +40,15 @@ function prompt(
       `En focus pon 1 o 2 categorias REALMENTE observadas; si no hubo errores, focus:[].`
     );
   }
+  if (mode === "remember") {
+    return (
+      `Del siguiente diálogo de CHARLA LIBRE, extrae hasta 3 datos DURABLES y reales del ESTUDIANTE ` +
+      `(trabajo/estudios, familia/mascotas, intereses, metas con el inglés, ciudad). En español, frases muy ` +
+      `cortas (p. ej. "trabaja en un call center", "tiene dos perros", "estudia de noche"). NO inventes; ignora ` +
+      `ficción de role-play; NADA sensible (salud, religión, política, datos de contacto). Si no hay datos ` +
+      `personales claros, devuelve []. ${ctx}\n\nResponde SOLO JSON: {"facts":["...","..."]}`
+    );
+  }
   return (
     `Eres un coach de inglés. ${ctx}\n\n` +
     `El estudiante debe responder al personaje. Sugiere 3 frases CORTAS y naturales en inglés ` +
@@ -101,6 +110,12 @@ Deno.serve(async (req: Request) => {
             }))
         : [],
     });
+  }
+  if (mode === "remember") {
+    const facts = Array.isArray(parsed.facts)
+      ? parsed.facts.filter((x: unknown) => typeof x === "string" && x.trim()).slice(0, 3)
+      : [];
+    return json({ facts });
   }
   const s = Array.isArray(parsed.suggestions) ? parsed.suggestions.slice(0, 3) : [];
   return json({ suggestions: s });
