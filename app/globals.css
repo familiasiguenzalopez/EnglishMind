@@ -134,6 +134,24 @@ h3 {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   50% { transform: translateY(-1px) rotate(2deg); }
 }
+@keyframes em-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes em-bounce-in {
+  0% { opacity: 0; transform: translateY(12px) scale(0.9); }
+  60% { opacity: 1; transform: translateY(-3px) scale(1.04); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes em-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-12deg); }
+  60% { transform: rotate(10deg); }
+}
+@keyframes em-confetti {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--dx, 0), var(--dy, 40px)) rotate(var(--rot, 180deg)); }
+}
 
 .em-eye {
   transform-box: fill-box;
@@ -180,8 +198,25 @@ h3 {
   transform-origin: center bottom;
   animation: em-listen 2.6s ease-in-out infinite;
 }
+.em-fade {
+  animation: em-fade 0.35s ease-out;
+}
+.em-bounce-in {
+  animation: em-bounce-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.em-wiggle {
+  display: inline-block;
+  animation: em-wiggle 0.6s ease-in-out;
+}
+.em-confetti {
+  animation: em-confetti 0.95s ease-out forwards;
+}
 
 @media (prefers-reduced-motion: reduce) {
+  .em-fade,
+  .em-bounce-in,
+  .em-wiggle,
+  .em-confetti,
   .em-step,
   .em-eye,
   .em-bob,

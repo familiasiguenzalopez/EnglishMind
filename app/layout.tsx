@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/BottomNav";
 import { Celebration } from "@/components/Celebration";
+import { PageTransition } from "@/components/PageTransition";
 
 const display = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -45,7 +46,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${display.variable} ${body.variable}`}>
       <body>
-        {children}
+        <PageTransition>{children}</PageTransition>
         <BottomNav />
         <Celebration />
       </body>
