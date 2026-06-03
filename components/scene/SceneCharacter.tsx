@@ -59,7 +59,7 @@ export function SceneCharacter({
       )}
 
       <svg viewBox="0 0 100 116" width={size * 0.82} height={size * 0.95} className="relative">
-        <g className="em-bob">
+        <g className={speaking ? "em-speak" : "em-bob"}>
           {/* Hombros / torso */}
           <rect x="20" y="86" width="60" height="34" rx="22" fill={lk.shirt} />
           {/* Cuello */}
@@ -71,9 +71,9 @@ export function SceneCharacter({
           <circle cx="77" cy="50" r="4" fill={lk.skin} />
           {/* Cabello (corona + fleco) */}
           <path d="M23 48 A27 27 0 0 1 77 48 Q64 39 50 40 Q36 39 23 48 Z" fill={lk.hair} />
-          {/* Cejas */}
-          <rect x="36" y="40" width="10" height="2.4" rx="1.2" fill={lk.hair} />
-          <rect x="54" y="40" width="10" height="2.4" rx="1.2" fill={lk.hair} />
+          {/* Cejas (expresivas al hablar) */}
+          <rect className={speaking ? "em-brow" : undefined} x="36" y="40" width="10" height="2.4" rx="1.2" fill={lk.hair} />
+          <rect className={speaking ? "em-brow" : undefined} x="54" y="40" width="10" height="2.4" rx="1.2" fill={lk.hair} />
           {/* Ojos (parpadean) */}
           <ellipse className="em-eye" cx="41" cy="48" rx="3.2" ry="4.3" fill="#1c1c22" />
           <ellipse className="em-eye" cx="59" cy="48" rx="3.2" ry="4.3" fill="#1c1c22" />
