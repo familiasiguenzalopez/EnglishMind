@@ -5,14 +5,14 @@ import { XpStreak } from "@/components/XpStreak";
 // Es el destino de la pestaña "Practicar".
 export const metadata = { title: "Entrenador · EnglishMind" };
 
-type Tool = { href: string; icon: string; label: string; sub: string; tag?: string };
+type Tool = { href: string; icon: string; label: string; sub: string; tag?: string; g: string };
 
 const TOOLS: Tool[] = [
-  { href: "/escenarios", icon: "🎬", label: "Conversación", sub: "Habla en situaciones reales con tu tutor.", tag: "Popular" },
-  { href: "/pronunciacion", icon: "🗣️", label: "Pronunciación", sub: "Afina tu acento, sonido por sonido." },
-  { href: "/escritura", icon: "✍️", label: "Escritura", sub: "Escribe y recibe feedback claro en español." },
-  { href: "/repaso", icon: "🔁", label: "Repaso", sub: "Fija lo aprendido con repaso espaciado." },
-  { href: "/aprender", icon: "🛤️", label: "Tu camino", sub: "Plan guiado por niveles CEFR." },
+  { href: "/escenarios", icon: "🎬", label: "Conversación", sub: "Habla en situaciones reales con tu tutor.", tag: "Popular", g: "linear-gradient(135deg,#ff5e9c,#ff8f6b)" },
+  { href: "/pronunciacion", icon: "🗣️", label: "Pronunciación", sub: "Afina tu acento, sonido por sonido.", g: "linear-gradient(135deg,#49a8ff,#5ee7d6)" },
+  { href: "/escritura", icon: "✍️", label: "Escritura", sub: "Escribe y recibe feedback claro en español.", g: "linear-gradient(135deg,#9b6bff,#7c5cff)" },
+  { href: "/repaso", icon: "🔁", label: "Repaso", sub: "Fija lo aprendido con repaso espaciado.", g: "linear-gradient(135deg,#ffc24b,#ff8f6b)" },
+  { href: "/aprender", icon: "🛤️", label: "Tu camino", sub: "Plan guiado por niveles CEFR.", g: "linear-gradient(135deg,#2ee6c4,#49a8ff)" },
 ];
 
 export default function Entrenador() {
@@ -30,7 +30,7 @@ export default function Entrenador() {
             href={t.href}
             className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-4 transition hover:border-primary"
           >
-            <div className="grid h-12 w-12 flex-none place-items-center rounded-full bg-surface3 text-2xl">
+            <div className="grid h-12 w-12 flex-none place-items-center rounded-full text-2xl shadow-md" style={{ background: t.g }}>
               {t.icon}
             </div>
             <div className="min-w-0 flex-1">

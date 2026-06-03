@@ -12,10 +12,10 @@ import { HomeWelcomeGate } from "@/components/HomeWelcomeGate";
 export const dynamic = "force-dynamic";
 
 const PRACTICE = [
-  { href: "/escenarios", icon: "🎬", label: "Escenarios", sub: "Conversa en situaciones reales" },
-  { href: "/pronunciacion", icon: "🗣️", label: "Pronunciación", sub: "Afina tu acento" },
-  { href: "/escritura", icon: "✍️", label: "Escritura", sub: "Mejora tus textos" },
-  { href: "/repaso", icon: "🔁", label: "Repaso", sub: "Fija lo aprendido" },
+  { href: "/escenarios", icon: "🎬", label: "Escenarios", sub: "Conversa en situaciones reales", g: "linear-gradient(135deg,#ff5e9c,#ff8f6b)" },
+  { href: "/pronunciacion", icon: "🗣️", label: "Pronunciación", sub: "Afina tu acento", g: "linear-gradient(135deg,#49a8ff,#5ee7d6)" },
+  { href: "/escritura", icon: "✍️", label: "Escritura", sub: "Mejora tus textos", g: "linear-gradient(135deg,#9b6bff,#7c5cff)" },
+  { href: "/repaso", icon: "🔁", label: "Repaso", sub: "Fija lo aprendido", g: "linear-gradient(135deg,#ffc24b,#ff8f6b)" },
 ];
 
 const MORE = [
@@ -103,7 +103,7 @@ export default async function HomeDashboard() {
         {path.next ? (
           <Link
             href={lessonHref(path.next.kind, path.next.id)}
-            className="mt-4 flex items-center justify-between rounded-md bg-primary px-4 py-3 text-sm font-bold text-white transition hover:bg-primary-dim"
+            className="em-cta mt-4 flex items-center justify-between rounded-md px-4 py-3 text-sm font-bold text-white transition hover:opacity-90"
           >
             <span>
               {path.doneLessons > 0 ? "Continuar" : "Empezar"}: {path.next.title}
@@ -121,7 +121,7 @@ export default async function HomeDashboard() {
         ) : (
           <Link
             href="/aprender"
-            className="mt-4 flex items-center justify-between rounded-md bg-primary px-4 py-3 text-sm font-bold text-white transition hover:bg-primary-dim"
+            className="em-cta mt-4 flex items-center justify-between rounded-md px-4 py-3 text-sm font-bold text-white transition hover:opacity-90"
           >
             <span>Empezar a aprender</span>
             <span>▶</span>
@@ -138,7 +138,9 @@ export default async function HomeDashboard() {
             href={p.href}
             className="rounded-2xl border border-line bg-surface p-4 transition hover:border-primary"
           >
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-surface3 text-xl">{p.icon}</div>
+            <div className="grid h-10 w-10 place-items-center rounded-full text-xl shadow-md" style={{ background: p.g }}>
+              {p.icon}
+            </div>
             <div className="mt-2 font-semibold text-ink-bright">{p.label}</div>
             <div className="text-xs text-ink-muted">{p.sub}</div>
           </Link>

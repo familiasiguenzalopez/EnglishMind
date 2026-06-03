@@ -81,6 +81,12 @@ h3 {
   letter-spacing: -0.02em;
 }
 
+/* CTA con degradado de marca (violeta→azul) */
+.em-cta {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: #fff;
+}
+
 @keyframes em-pop {
   from {
     opacity: 0;

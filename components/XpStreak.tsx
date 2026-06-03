@@ -75,15 +75,16 @@ export function XpStreak() {
       <div className="mt-3 flex items-center justify-between">
         {week.map((d, k) => (
           <div key={k} className="flex flex-col items-center gap-1">
-            <span className={"text-[10px] " + (d.isToday ? "font-bold text-primary" : "text-ink-dim")}>
+            <span className={"text-[10px] " + (d.isToday ? "font-bold text-[#ffc24b]" : "text-ink-dim")}>
               {d.letter}
             </span>
             <span
               className={
                 "grid h-7 w-7 place-items-center rounded-full text-[11px] " +
-                (d.active ? "bg-secondary text-bg" : "bg-surface3 text-ink-dim") +
-                (d.isToday ? " ring-2 ring-primary" : "")
+                (d.active ? "text-bg" : "bg-surface3 text-ink-dim") +
+                (d.isToday ? " ring-2 ring-[#ffc24b]" : "")
               }
+              style={d.active ? { background: "linear-gradient(135deg,#ff7a59,#ffc24b)", color: "#1a1030" } : undefined}
             >
               {d.active ? "🔥" : "·"}
             </span>
