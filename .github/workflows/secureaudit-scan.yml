@@ -1,0 +1,125 @@
+# SecureAudit IQ — workflow reutilizable de escaneo en CI/CD (D7.5).
+#
+# CÓMO ADOPTARLO EN OTRO REPO (2 pasos):
+#   1. Copia este archivo tal cual a .github/workflows/secureaudit-scan.yml
+#      en el repo que quieras escanear.
+#   2. En ese repo: Settings -> Secrets and variables -> Actions ->
+#      New repository secret -> nombre SECUREAUDIT_TOKEN, valor el token
+#      generado en SecureAudit IQ (pestaña Usuarios -> "🔑 Tokens de API").
+#   Ajusta SECUREAUDIT_URL y OPENGREP_LANGUAGE abajo a tu caso (única
+#   personalización real -- el resto funciona igual en cualquier repo).
+#
+# QUÉ HACE: en cada Pull Request, sube el código fuente del repo al motor
+# SAST determinístico (Opengrep) de SecureAudit IQ vía la API con el token
+# de servicio (Bearer -- D7.5, nunca una sesión humana), comenta en el PR
+# una tabla resumen (no el reporte completo -- eso se revisa en la app), y
+# opcionalmente falla el check si hay hallazgos CRITICAL/HIGH sobre el
+# umbral configurado.
+#
+# LIMITACIÓN HONESTA DE V1: escanea el REPO COMPLETO en cada corrida, no
+# solo el diff del PR -- más simple y confiable de implementar correctamente
+# que un cálculo de diff, a costa de repetir trabajo en repos grandes. Si
+# eso se vuelve un problema real de tiempo/costo, migrar a `git diff
+# --name-only origin/main...HEAD` para acotar los archivos subidos.
+
+name: SecureAudit IQ Scan
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  # Cambia esto a la URL real de tu instancia de SecureAudit IQ.
+  SECUREAUDIT_URL: "https://secureaudit.ianovatechsystems.com"
+  # javascript | java | php | python | go | csharp | llmtop10 -- ver
+  # backend/server.js (OPENGREP_LANGUAGES) para la lista vigente.
+  OPENGREP_LANGUAGE: "javascript"
+  # Extensiones de archivo a subir, según OPENGREP_LANGUAGE arriba.
+  FILE_GLOB: "*.js,*.jsx,*.ts,*.tsx"
+  # Si hay al menos un hallazgo CRITICAL o HIGH, falla el check del PR.
+  FAIL_ON_CRITICAL_HIGH: "true"
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ejecutar escaneo SecureAudit IQ
+        id: scan
+        env:
+          SECUREAUDIT_TOKEN: ${{ secrets.SECUREAUDIT_TOKEN }}
+        run: |
+          set -e
+          CURL_ARGS=(-s -X POST "$SECUREAUDIT_URL/api/opengrep-scan" \
+            -H "Authorization: Bearer $SECUREAUDIT_TOKEN" \
+            -F "projectName=${{ github.repository }}" \
+            -F "language=$OPENGREP_LANGUAGE")
+
+          IFS=',' read -ra PATTERNS <<< "$FILE_GLOB"
+          FILE_COUNT=0
+          for pattern in "${PATTERNS[@]}"; do
+            while IFS= read -r -d '' file; do
+              CURL_ARGS+=(-F "files=@${file}")
+              FILE_COUNT=$((FILE_COUNT + 1))
+            done < <(find . -type f -name "$pattern" -not -path "*/node_modules/*" -not -path "*/.git/*" -print0)
+          done
+
+          echo "Archivos a escanear: $FILE_COUNT"
+          if [ "$FILE_COUNT" -eq 0 ]; then
+            echo "Sin archivos que coincidan con FILE_GLOB -- nada que escanear."
+            echo '{"findings":[],"summary":{"critical":0,"high":0,"medium":0,"low":0,"info":0}}' > scan-result.json
+          else
+            curl "${CURL_ARGS[@]}" -o scan-result.json -w "HTTP %{http_code}\n"
+          fi
+
+          cat scan-result.json
+
+          CRITICAL=$(jq '.summary.critical // 0' scan-result.json)
+          HIGH=$(jq '.summary.high // 0' scan-result.json)
+          MEDIUM=$(jq '.summary.medium // 0' scan-result.json)
+          LOW=$(jq '.summary.low // 0' scan-result.json)
+          {
+            echo "critical=$CRITICAL"
+            echo "high=$HIGH"
+            echo "medium=$MEDIUM"
+            echo "low=$LOW"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Comentar resumen en el PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CRITICAL="${{ steps.scan.outputs.critical }}"
+          HIGH="${{ steps.scan.outputs.high }}"
+          MEDIUM="${{ steps.scan.outputs.medium }}"
+          LOW="${{ steps.scan.outputs.low }}"
+
+          {
+            echo "### 🛡️ SecureAudit IQ — SAST Determinístico ($OPENGREP_LANGUAGE)"
+            echo ""
+            echo "| Severidad | Hallazgos |"
+            echo "|---|---|"
+            echo "| 🔴 Crítico | $CRITICAL |"
+            echo "| 🟠 Alto | $HIGH |"
+            echo "| 🟡 Medio | $MEDIUM |"
+            echo "| ⚪ Bajo | $LOW |"
+            echo ""
+            echo "Reporte completo (con ubicación exacta y sugerencia de fix por hallazgo) disponible en la app SecureAudit IQ."
+          } > pr-comment.md
+
+          gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --body-file pr-comment.md
+
+      - name: Verificar umbral CRITICAL/HIGH
+        if: env.FAIL_ON_CRITICAL_HIGH == 'true'
+        run: |
+          CRITICAL="${{ steps.scan.outputs.critical }}"
+          HIGH="${{ steps.scan.outputs.high }}"
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "::error::SecureAudit IQ encontró $CRITICAL crítico(s) y $HIGH alto(s) -- revisar antes de mergear."
+            exit 1
+          fi
