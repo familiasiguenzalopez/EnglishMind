@@ -47,3 +47,5 @@ Variables de entorno: copia `.env.example` a `.env.local`. Las claves de IA NO v
 - [ ] Service worker offline (Serwist)
 
 Ver el roadmap completo por fases en la conversación de planificación.
+
+<!-- PR de prueba para verificar el workflow de SecureAudit IQ (D7.5) -- se puede cerrar/borrar después de confirmar. -->
